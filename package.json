@@ -1,0 +1,33 @@
+{
+  "name": "smtp-connection",
+  "version": "0.1.0",
+  "description": "Connect to SMTP servers",
+  "main": "lib/smtp-connection.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "grunt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andris9/smtp-connection.git"
+  },
+  "keywords": [
+    "SMTP"
+  ],
+  "author": "Andris Reinman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andris9/smtp-connection/issues"
+  },
+  "homepage": "https://github.com/andris9/smtp-connection",
+  "devDependencies": {
+    "chai": "~1.8.1",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.8.0",
+    "grunt-mocha-test": "~0.10.0",
+    "sinon": "^1.9.0",
+    "simplesmtp": "^0.3.32"
+  }
+}
