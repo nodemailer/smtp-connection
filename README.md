@@ -69,8 +69,8 @@ Where
 
   * **auth** is the authentication object
     * **auth.user** is the username
-    * **auth.password** is the password for the user
-    * **auth.xoauth2** is the OAuth2 access token (preferred if both `password` and `xoauth2` values are set)
+    * **auth.pass** is the password for the user
+    * **auth.xoauth2** is the OAuth2 access token (preferred if both `pass` and `xoauth2` values are set)
   * **callback** is the callback to run once the authentication is finished. Callback has the following arugments
     * **err** and error object if authentication failed
 
