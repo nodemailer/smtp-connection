@@ -91,7 +91,7 @@ describe('Connection tests', function() {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 3,
             ignoreTLS: true,
-            secure: true
+            secureConnection: true
         });
 
         client.connect(function() {
