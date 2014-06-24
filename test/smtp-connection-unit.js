@@ -174,7 +174,7 @@ describe('Login tests', function() {
         });
 
         server.on('authorizeUser', function(connection, username, pass, callback) {
-            callback(null, username === 'testuser' && (pass === 'testpass' ||  pass === 'testtoken'));
+            callback(null, username === 'testuser' && (pass === 'testpass' || pass === 'testtoken'));
         });
 
         server.on('validateSender', function(connection, email, callback) {
@@ -219,6 +219,7 @@ describe('Login tests', function() {
         }, function(err) {
             expect(err).to.exist;
             expect(client.authenticated).to.be.false;
+            expect(err.code).to.equal('EAUTH');
             done();
         });
     });
@@ -243,6 +244,7 @@ describe('Login tests', function() {
         }, function(err) {
             expect(err).to.exist;
             expect(client.authenticated).to.be.false;
+            expect(err.code).to.equal('EAUTH');
             done();
         });
     });
