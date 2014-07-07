@@ -37,6 +37,14 @@ describe('Connection tests', function() {
             secureConnection: true
         });
 
+        server.on("dataReady", function(connection, callback) {
+            callback(null, "ABC1");
+        });
+
+        secureServer.on("dataReady", function(connection, callback) {
+            callback(null, "ABC1");
+        });
+
         server.listen(PORT_NUMBER, function() {
             invalidServer.listen(PORT_NUMBER + 1, function() {
                 secureServer.listen(PORT_NUMBER + 3, done);
@@ -185,6 +193,10 @@ describe('Login tests', function() {
             callback(!/@valid.recipient/.test(email) && new Error('Invalid recipient'));
         });
 
+        server.on("dataReady", function(connection, callback) {
+            callback(null, "ABC1");
+        });
+
         client = new SMTPConnection({
             port: PORT_NUMBER
         });
@@ -268,7 +280,8 @@ describe('Login tests', function() {
                 expect(err).to.not.exist;
                 expect(info).to.deep.equal({
                     accepted: ['test@valid.recipient'],
-                    rejected: []
+                    rejected: [],
+                    response: '250 2.0.0 Ok: queued as ABC1'
                 });
                 done();
             });
@@ -282,7 +295,8 @@ describe('Login tests', function() {
                 expect(err).to.not.exist;
                 expect(info).to.deep.equal({
                     accepted: ['test1@valid.recipient', 'test3@valid.recipient'],
-                    rejected: ['test2@invalid.recipient']
+                    rejected: ['test2@invalid.recipient'],
+                    response: '250 2.0.0 Ok: queued as ABC1'
                 });
                 done();
             });
@@ -316,10 +330,11 @@ describe('Login tests', function() {
                 chunks.push(chunk);
             });
 
+            server.removeAllListeners('dataReady');
             server.on('dataReady', function(connection, callback) {
                 var body = Buffer.concat(chunks);
                 expect(body.toString()).to.equal(message.trim().replace(/\n/g, '\r\n'));
-                callback(null, true);
+                callback(null, 'ABC1');
             });
 
             client.send({
@@ -339,10 +354,11 @@ describe('Login tests', function() {
                 chunks.push(chunk);
             });
 
+            server.removeAllListeners('dataReady');
             server.on('dataReady', function(connection, callback) {
                 var body = Buffer.concat(chunks);
                 expect(body.toString()).to.equal(message.toString().trim().replace(/\n/g, '\r\n'));
-                callback(null, true);
+                callback(null, 'ABC1');
             });
 
             client.send({
@@ -363,10 +379,11 @@ describe('Login tests', function() {
                 chunks.push(chunk);
             });
 
+            server.removeAllListeners('dataReady');
             server.on('dataReady', function(connection, callback) {
                 var body = Buffer.concat(chunks);
                 expect(body.toString()).to.equal(message.toString().trim().replace(/\n/g, '\r\n'));
-                callback(null, true);
+                callback(null, 'ABC1');
             });
 
             client.send({
