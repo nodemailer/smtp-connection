@@ -42,8 +42,8 @@ SMTPConnection instances are event emitters with the following events
 
   * **'error'** *(err)* emitted when an error occurs. Connection is closed automatically in this case.
   * **'connect'** emitted when the connection is established
-  * **'log'** *(data)* emitted for all traffic when debug option is set to true
   * **'end'** when the instance is destroyed
+  * **'log'** *(data)* emitted for all traffic when debug option is set to true
 
 ### connect
 
@@ -90,9 +90,13 @@ Where
   * **message** is either a String, Buffer or a Stream. All newlines in converted to \r\n and all dots are escaped automatically, no need to convert anything before.
   * **callback** is the callback to run once the sending is finished or failed. Callback has the following arugments
     * **err** and error object if sending failed
+      * **code** string code identifying the error, for example 'EAUTH' is returned when authentication fails
+      * **response** is the last response received from the server (if the error is caused by an error response from the server)
+      * **responseCode** is the numeric response code of the `response` string (if available)
     * **info** information object about accepted and rejected recipients
       * **acepted** and array of accepted recipient addresses
       * **rejected** and array of rejected recipient addresses
+      * **response** is the last response received from the server
 
 ### quit
 

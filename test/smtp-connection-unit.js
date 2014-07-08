@@ -232,6 +232,8 @@ describe('Login tests', function() {
             expect(err).to.exist;
             expect(client.authenticated).to.be.false;
             expect(err.code).to.equal('EAUTH');
+            expect(err.responseCode).to.equal(535);
+            expect(err.response).to.contain('535 5.7.8 Error');
             done();
         });
     });
