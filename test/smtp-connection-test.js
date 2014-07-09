@@ -174,6 +174,8 @@ describe('Connection tests', function() {
 });
 
 describe('Login tests', function() {
+    this.timeout(10 * 1000);
+
     var server, client, testtoken = 'testtoken';
 
     beforeEach(function(done) {
