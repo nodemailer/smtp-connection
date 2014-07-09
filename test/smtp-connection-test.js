@@ -5,13 +5,17 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 var fs = require('fs');
 var chai = require('chai');
 var expect = chai.expect;
-var SMTPConnection = require('../lib/smtp-connection');
+var SMTPConnection = require('../src/smtp-connection');
 var packageData = require('../package.json');
 var simplesmtp = require('simplesmtp');
 chai.Assertion.includeStack = true;
 var net = require('net');
+var xoauth2Server = require('./xoauth2-mock-server');
+var xoauth2 = require('xoauth2');
+var sinon = require('sinon');
 
 var PORT_NUMBER = 8397;
+var XOAUTH_PORT = 8497;
 
 describe('Version test', function() {
     it('Should expose version number', function() {
@@ -170,7 +174,7 @@ describe('Connection tests', function() {
 });
 
 describe('Login tests', function() {
-    var server, client;
+    var server, client, testtoken = 'testtoken';
 
     beforeEach(function(done) {
         server = new simplesmtp.createServer({
@@ -182,7 +186,7 @@ describe('Login tests', function() {
         });
 
         server.on('authorizeUser', function(connection, username, pass, callback) {
-            callback(null, username === 'testuser' && (pass === 'testpass' || pass === 'testtoken'));
+            callback(null, username === 'testuser' && (pass === 'testpass' || pass === testtoken));
         });
 
         server.on('validateSender', function(connection, email, callback) {
@@ -238,29 +242,113 @@ describe('Login tests', function() {
         });
     });
 
-    it('should login with xoauth2', function(done) {
-        expect(client.authenticated).to.be.false;
-        client.login({
-            user: 'testuser',
-            xoauth2: 'testtoken'
-        }, function(err) {
-            expect(err).to.not.exist;
-            expect(client.authenticated).to.be.true;
-            done();
-        });
-    });
+    describe('xoauth2 login', function() {
+        this.timeout(10 * 1000);
+        var x2server;
 
-    it('should return error for invalid xoauth2 token', function(done) {
-        expect(client.authenticated).to.be.false;
-        client.login({
-            user: 'testuser',
-            xoauth2: 'invalid'
-        }, function(err) {
-            expect(err).to.exist;
-            expect(client.authenticated).to.be.false;
-            expect(err.code).to.equal('EAUTH');
-            done();
+        beforeEach(function(done) {
+            x2server = xoauth2Server({
+                port: XOAUTH_PORT,
+                onUpdate: (function(username, accessToken) {
+                    testtoken = accessToken;
+                }).bind(this)
+            });
+
+            x2server.addUser('testuser', 'refresh-token');
+
+            x2server.start(done);
         });
+
+        afterEach(function(done) {
+            x2server.stop(done);
+        });
+
+        it('should login with xoauth2 string', function(done) {
+            expect(client.authenticated).to.be.false;
+            client.login({
+                user: 'testuser',
+                xoauth2: testtoken
+            }, function(err) {
+                expect(err).to.not.exist;
+                expect(client.authenticated).to.be.true;
+                done();
+            });
+        });
+
+        it('should return error for invalid xoauth2 string token', function(done) {
+            expect(client.authenticated).to.be.false;
+            client.login({
+                user: 'testuser',
+                xoauth2: 'invalid'
+            }, function(err) {
+                expect(err).to.exist;
+                expect(client.authenticated).to.be.false;
+                expect(err.code).to.equal('EAUTH');
+                done();
+            });
+        });
+
+        it('should login with xoauth2 object', function(done) {
+            expect(client.authenticated).to.be.false;
+            client.login({
+                xoauth2: xoauth2.createXOAuth2Generator({
+                    user: 'testuser',
+                    clientId: '{Client ID}',
+                    clientSecret: '{Client Secret}',
+                    refreshToken: 'refresh-token',
+                    accessToken: 'uuuuu',
+                    accessUrl: 'http://localhost:' + XOAUTH_PORT
+                })
+            }, function(err) {
+                expect(err).to.not.exist;
+                expect(client.authenticated).to.be.true;
+                done();
+            });
+        });
+
+        it('should fail with xoauth2 object', function(done) {
+            expect(client.authenticated).to.be.false;
+            client.login({
+                xoauth2: xoauth2.createXOAuth2Generator({
+                    user: 'testuser',
+                    clientId: '{Client ID}',
+                    clientSecret: '{Client Secret}',
+                    refreshToken: 'refrsesh-token',
+                    accessToken: 'uuuuu',
+                    accessUrl: 'http://localhost:' + XOAUTH_PORT
+                })
+            }, function(err) {
+                expect(err).to.exist;
+                expect(client.authenticated).to.be.false;
+                done();
+            });
+        });
+
+        it('should fail with invalid xoauth2 response', function(done) {
+            expect(client.authenticated).to.be.false;
+
+            var x2gen = xoauth2.createXOAuth2Generator({
+                user: 'testuser',
+                clientId: '{Client ID}',
+                clientSecret: '{Client Secret}',
+                refreshToken: 'refresh-token',
+                accessToken: 'uuuuu',
+                accessUrl: 'http://localhost:' + XOAUTH_PORT
+            });
+
+            sinon.stub(x2gen, 'generateToken').yields(null, 'dXNlcj10ZXN0dXNlcgFhdXRoPUJlYXJlciB1dXV1dQEB');
+
+            client.login({
+                xoauth2: x2gen
+            }, function(err) {
+                expect(err).to.exist;
+                expect(client.authenticated).to.be.false;
+
+                x2gen.generateToken.restore();
+                done();
+            });
+        });
+
     });
 
     describe('Send messages', function() {

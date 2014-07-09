@@ -70,9 +70,33 @@ Where
   * **auth** is the authentication object
     * **auth.user** is the username
     * **auth.pass** is the password for the user
-    * **auth.xoauth2** is the OAuth2 access token (preferred if both `pass` and `xoauth2` values are set)
+    * **auth.xoauth2** is the OAuth2 access token (preferred if both `pass` and `xoauth2` values are set) or an [XOAuth2](https://github.com/andris9/xoauth2) token generator object.
   * **callback** is the callback to run once the authentication is finished. Callback has the following arugments
     * **err** and error object if authentication failed
+
+If a [XOAuth2](https://github.com/andris9/xoauth2) token generator is used as the value for `auth.xoauth2` then you do not need to set `auth.user`. XOAuth2 generator generates required accessToken itself if it is missing or expired. In this case if the authentication fails, a new token is requeested and the authentication is retried. If it still fails, an error is returned.
+
+**XOAuth2 Example**
+
+```javascript
+var generator = require('xoauth2').createXOAuth2Generator({
+    user: '{username}',
+    clientId: '{Client ID}',
+    clientSecret: '{Client Secret}',
+    refreshToken: '{refresh-token}'
+});
+
+// listen for token updates
+// you probably want to store these to a db
+generator.on('token', function(token){
+    console.log('New token for %s: %s', token.user, token.accessToken);
+});
+
+// login
+connection.login({
+    xoauth2: generator
+}, callback);
+```
 
 ### send
 

@@ -1,8 +1,8 @@
 {
   "name": "smtp-connection",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Connect to SMTP servers",
-  "main": "lib/smtp-connection.js",
+  "main": "src/smtp-connection.js",
   "directories": {
     "test": "test"
   },
@@ -27,7 +27,8 @@
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.8.0",
     "grunt-mocha-test": "~0.10.0",
+    "simplesmtp": "^0.3.32",
     "sinon": "^1.9.0",
-    "simplesmtp": "^0.3.32"
+    "xoauth2": "^0.1.8"
   }
 }

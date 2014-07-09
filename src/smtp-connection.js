@@ -215,10 +215,7 @@ SMTPConnection.prototype.login = function(authData, callback) {
 
     switch (authMethod) {
         case 'XOAUTH2':
-            this._currentAction = function(str) {
-                this._actionAUTHComplete(str, callback);
-            }.bind(this);
-            this._sendCommand('AUTH XOAUTH2 ' + this._buildXOAuth2Token(this._auth.user, this._auth.xoauth2));
+            this._handleXOauth2Token(false, callback);
             return;
         case 'LOGIN':
             this._currentAction = function(str) {
@@ -790,10 +787,19 @@ SMTPConnection.prototype._actionAUTH_LOGIN_PASS = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionAUTHComplete = function(str, callback) {
+SMTPConnection.prototype._actionAUTHComplete = function(str, isRetry, callback) {
+    if (!callback && typeof isRetry === 'function') {
+        callback = isRetry;
+        isRetry = undefined;
+    }
+
     if (str.substr(0, 3) === '334') {
         this._currentAction = function(str) {
-            this._actionAUTHComplete(str, callback);
+            if (isRetry || !this._auth.xoauth2 || typeof this._auth.xoauth2 !== 'object') {
+                this._actionAUTHComplete(str, true, callback);
+            } else {
+                setTimeout(this._handleXOauth2Token.bind(this, true, callback), Math.random() * 4000 + 1000);
+            }
         }.bind(this);
         this._sendCommand(new Buffer(0));
         return;
@@ -889,6 +895,23 @@ SMTPConnection.prototype._actionStream = function(str, callback) {
     } else {
         // Message sent succesfully
         callback(null, str);
+    }
+};
+
+SMTPConnection.prototype._handleXOauth2Token = function(isRetry, callback) {
+    this._currentAction = function(str) {
+        this._actionAUTHComplete(str, isRetry, callback);
+    }.bind(this);
+
+    if (this._auth.xoauth2 && typeof this._auth.xoauth2 === 'object') {
+        this._auth.xoauth2[isRetry ? 'generateToken' : 'getToken'](function(err, token) {
+            if (err) {
+                return callback(this._formatError(err, 'EAUTH'));
+            }
+            this._sendCommand('AUTH XOAUTH2 ' + token);
+        }.bind(this));
+    } else {
+        this._sendCommand('AUTH XOAUTH2 ' + this._buildXOAuth2Token(this._auth.user, this._auth.xoauth2));
     }
 };
 
