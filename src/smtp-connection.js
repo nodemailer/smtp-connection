@@ -16,7 +16,7 @@ module.exports = SMTPConnection;
  *
  * Optional options object takes the following possible properties:
  *
- *  * **secureConnection** - use SSL
+ *  * **secure** - use SSL
  *  * **name** - the name of the client server
  *  * **auth** - authentication object {user:'...', pass:'...'}
  *  * **ignoreTLS** - ignore server support for STARTTLS
@@ -37,9 +37,9 @@ function SMTPConnection(options) {
 
     this.options = options || {};
 
-    this.options.port = this.options.port || (this.options.secureConnection ? 465 : 25);
+    this.options.port = this.options.port || (this.options.secure ? 465 : 25);
     this.options.host = this.options.host || 'localhost';
-    this.options.secureConnection = !!this.options.secureConnection;
+    this.options.secure = !!this.options.secure;
 
     this.options.name = this.options.name || this._getHostname();
 
@@ -116,7 +116,7 @@ function SMTPConnection(options) {
      */
     this._connectionTimeout = false;
 
-    if (this.options.secureConnection) {
+    if (this.options.secure) {
         this._secureMode = true;
     }
 }
@@ -140,7 +140,7 @@ SMTPConnection.prototype.connect = function(connectCallback) {
         opts.localAddress = this.options.localAddress;
     }
 
-    if (this.options.secureConnection) {
+    if (this.options.secure) {
         if (this.options.tls) {
             Object.keys(this.options.tls).forEach((function(key) {
                 opts[key] = this.options.tls[key];
