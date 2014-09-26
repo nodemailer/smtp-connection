@@ -116,6 +116,12 @@ function SMTPConnection(options) {
      */
     this._connectionTimeout = false;
 
+    /**
+     * If the socket is deemed already closed
+     * @private
+     */
+    this._destroyed = false;
+
     if (this.options.secure) {
         this._secureMode = true;
     }
@@ -152,8 +158,7 @@ SMTPConnection.prototype.connect = function(connectCallback) {
     }
 
     this._connectionTimeout = setTimeout((function() {
-        this.emit('error', this._formatError('Connection timeout', 'ETIMEDOUT'));
-        this.close();
+        this._onError('Connection timeout', 'ETIMEDOUT');
     }).bind(this), this.options.connectionTimeout || 60 * 1000);
 
     this._socket.on('error', this._onError.bind(this));
@@ -286,6 +291,12 @@ SMTPConnection.prototype.send = function(envelope, message, callback) {
 SMTPConnection.prototype._onConnect = function() {
     clearTimeout(this._connectionTimeout);
 
+    if (this._destroyed) {
+        // Connection was established after we already had canceled it
+        this.close();
+        return;
+    }
+
     this.stage = 'connected';
 
     this._socket.on('data', this._onData.bind(this));
@@ -298,8 +309,7 @@ SMTPConnection.prototype._onConnect = function() {
     this._greetingTimeout = setTimeout((function() {
         // if still waiting for greeting, give up
         if (this._socket && !this._destroyed && this._currentAction === this._actionGreeting) {
-            this.emit('error', this._formatError('Greeting never received', 'ETIMEDOUT'));
-            this.close();
+            this._onError('Greeting never received', 'ETIMEDOUT');
         }
     }).bind(this), this.options.greetingTimeout || 10000);
 
@@ -347,6 +357,13 @@ SMTPConnection.prototype._onData = function(chunk) {
 SMTPConnection.prototype._onError = function(err, type, data) {
     clearTimeout(this._connectionTimeout);
     clearTimeout(this._greetingTimeout);
+
+    if (this._destroyed) {
+        // just ignore, already closed
+        // this might happen when a socket is canceled because of reached timeout
+        // but the socket timeout error itself receives only after
+        return;
+    }
 
     this.emit('error', this._formatError(err, type, data));
     this.close();

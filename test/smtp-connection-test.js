@@ -129,26 +129,7 @@ describe('Connection tests', function() {
             client.close();
         });
 
-        client.on('error', function(err) {
-            expect(err).to.exist;
-        });
-
-        client.on('end', done);
-    });
-
-    it('should emit error for missing greeting', function(done) {
-        var client = new SMTPConnection({
-            port: PORT_NUMBER + 1,
-            greetingTimeout: 100
-        });
-
-        client.connect(function() {
-            // should not run
-            expect(false).to.be.true;
-            client.close();
-        });
-
-        client.on('error', function(err) {
+        client.once('error', function(err) {
             expect(err).to.exist;
         });
 
@@ -165,7 +146,7 @@ describe('Connection tests', function() {
             // do nothing
         });
 
-        client.on('error', function(err) {
+        client.once('error', function(err) {
             expect(err).to.exist;
         });
 
