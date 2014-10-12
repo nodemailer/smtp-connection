@@ -20,6 +20,7 @@ module.exports = SMTPConnection;
  *  * **name** - the name of the client server
  *  * **auth** - authentication object {user:'...', pass:'...'}
  *  * **ignoreTLS** - ignore server support for STARTTLS
+ *  * **enforceTLS** - reject connection if the server doesn't support STARTTLS
  *  * **tls** - options for createCredentials
  *  * **debug** - if true, emits 'log' events with all traffic between client and server
  *  * **localAddress** - outbound address to bind to (see: http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener)
@@ -623,6 +624,12 @@ SMTPConnection.prototype._actionEHLO = function(str) {
         return;
     }
 
+    // Enforce STARTTLS if enabled
+    if(!str.match(/[ \-]STARTTLS\r?$/mi) && this.options.enforceTLS) {
+        this._onError(new Error('Enforcing TLS mode and server doesn\'t offer it.', 'ECONNECTION'));
+        return;
+    }
+    
     // Detect if the server supports STARTTLS
     if (!this._secureMode && str.match(/[ \-]STARTTLS\r?$/mi) && !this.options.ignoreTLS) {
         this._sendCommand('STARTTLS');
