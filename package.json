@@ -1,6 +1,6 @@
 {
   "name": "smtp-connection",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Connect to SMTP servers",
   "main": "src/smtp-connection.js",
   "directories": {

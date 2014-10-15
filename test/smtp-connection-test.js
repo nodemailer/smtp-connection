@@ -118,24 +118,6 @@ describe('Connection tests', function() {
         client.on('end', done);
     });
 
-    it('should handle ECONNRESET', function(done) {
-        var client = new SMTPConnection({
-            port: PORT_NUMBER + 3,
-            secure: true
-        });
-
-        client.connect(function() {
-            expect(client._secureMode).to.be.true;
-            client._socket.pair.encrypted.emit('error', new Error('ECONNRESET'));
-        });
-
-        client.on('error', function(err) {
-            expect(err).to.exist;
-        });
-
-        client.on('end', done);
-    });
-
     it('should emit error for invalid port', function(done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 2
