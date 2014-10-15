@@ -1,6 +1,6 @@
 {
   "name": "smtp-connection",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Connect to SMTP servers",
   "main": "src/smtp-connection.js",
   "directories": {
@@ -23,12 +23,13 @@
   },
   "homepage": "https://github.com/andris9/smtp-connection",
   "devDependencies": {
-    "chai": "~1.8.1",
-    "grunt": "~0.4.1",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-mocha-test": "~0.10.0",
-    "simplesmtp": "^0.3.32",
-    "sinon": "^1.9.0",
-    "xoauth2": "^0.1.8"
+    "chai": "^1.9.2",
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-mocha-test": "^0.12.1",
+    "mocha": "^1.21.5",
+    "simplesmtp": "^0.3.33",
+    "sinon": "^1.10.3",
+    "xoauth2": "^1.0.0"
   }
 }

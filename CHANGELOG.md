@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.1 2014-10-15
+
+  * Added 'error' handler for CleartextStream.pair.encrypted object when connecting to TLS.
+
 ## v1.0.0 2014-09-26
 
   * Changed version scheme from 0.x to 1.x.

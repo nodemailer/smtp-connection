@@ -153,6 +153,7 @@ SMTPConnection.prototype.connect = function(connectCallback) {
             }).bind(this));
         }
         this._socket = tls.connect(this.options.port, this.options.host, opts, this._onConnect.bind(this));
+        this._socket.pair.encrypted.on('error', this._onError.bind(this));
     } else {
         this._socket = net.connect(opts, this._onConnect.bind(this));
     }
@@ -196,7 +197,9 @@ SMTPConnection.prototype.close = function() {
     var socket = this._socket && this._socket.socket || this._socket;
 
     if (socket && !socket.destroyed) {
-        this._socket[closeMethod]();
+        try {
+            this._socket[closeMethod]();
+        } catch (E) {}
     }
 
     this._destroy();
