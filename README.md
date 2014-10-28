@@ -127,7 +127,7 @@ Where
 Use it for graceful disconnect
 
 ```javascript
-connection.quite();
+connection.quit();
 ```
 
 ### close
