@@ -118,7 +118,7 @@ Where
       * **response** is the last response received from the server (if the error is caused by an error response from the server)
       * **responseCode** is the numeric response code of the `response` string (if available)
     * **info** information object about accepted and rejected recipients
-      * **acepted** and array of accepted recipient addresses
+      * **accepted** and array of accepted recipient addresses
       * **rejected** and array of rejected recipient addresses
       * **response** is the last response received from the server
 
