@@ -33,8 +33,8 @@ Where
     * **options.greetingTimeout** how many milliseconds to wait for the greeting after connection is established
     * **options.socketTimeout** how many milliseconds of inactivity to allow
     * **options.debug** if true, the connection emits all traffic between client and server as 'log' events
-    * **options.authMethod** defines preferred authentication method, eg. 'PLAIN'
-    * **options.tls** defines additional options to be passed to the socket constructor, eg. *{rejectUnauthorized: true}*
+    * **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
+    * **options.tls** defines additional options to be passed to the socket constructor, e.g. *{rejectUnauthorized: true}*
 
 ### Events
 
@@ -71,7 +71,7 @@ Where
     * **auth.user** is the username
     * **auth.pass** is the password for the user
     * **auth.xoauth2** is the OAuth2 access token (preferred if both `pass` and `xoauth2` values are set) or an [XOAuth2](https://github.com/andris9/xoauth2) token generator object.
-  * **callback** is the callback to run once the authentication is finished. Callback has the following arugments
+  * **callback** is the callback to run once the authentication is finished. Callback has the following arguments
     * **err** and error object if authentication failed
 
 If a [XOAuth2](https://github.com/andris9/xoauth2) token generator is used as the value for `auth.xoauth2` then you do not need to set `auth.user`. XOAuth2 generator generates required accessToken itself if it is missing or expired. In this case if the authentication fails, a new token is requeested and the authentication is retried. If it still fails, an error is returned.
@@ -112,7 +112,7 @@ Where
     * **envelope.from** is the sender address
     * **envelope.to** is the recipient address or an array of addresses
   * **message** is either a String, Buffer or a Stream. All newlines in converted to \r\n and all dots are escaped automatically, no need to convert anything before.
-  * **callback** is the callback to run once the sending is finished or failed. Callback has the following arugments
+  * **callback** is the callback to run once the sending is finished or failed. Callback has the following arguments
     * **err** and error object if sending failed
       * **code** string code identifying the error, for example 'EAUTH' is returned when authentication fails
       * **response** is the last response received from the server (if the error is caused by an error response from the server)
