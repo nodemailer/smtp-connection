@@ -35,6 +35,7 @@ Where
     * **options.debug** if true, the connection emits all traffic between client and server as 'log' events
     * **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
     * **options.tls** defines additional options to be passed to the socket constructor, e.g. *{rejectUnauthorized: true}*
+    * **options.socket** - existing socket to use instead of creating a new one
 
 ### Events
 

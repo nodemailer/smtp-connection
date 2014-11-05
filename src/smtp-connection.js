@@ -19,6 +19,7 @@ module.exports = SMTPConnection;
  *  * **secure** - use SSL
  *  * **name** - the name of the client server
  *  * **auth** - authentication object {user:'...', pass:'...'}
+ *  * **socket** - existing socket to use instead of creating a new one (see: http://nodejs.org/api/net.html#net_class_net_socket)
  *  * **ignoreTLS** - ignore server support for STARTTLS
  *  * **tls** - options for createCredentials
  *  * **debug** - if true, emits 'log' events with all traffic between client and server
@@ -133,28 +134,33 @@ utillib.inherits(SMTPConnection, EventEmitter);
  * listener
  */
 SMTPConnection.prototype.connect = function(connectCallback) {
-    var opts = {
-        port: this.options.port,
-        host: this.options.host
-    };
-
     if (typeof connectCallback === 'function') {
         this.once('connect', connectCallback);
     }
 
-    if (this.options.localAddress) {
-        opts.localAddress = this.options.localAddress;
-    }
-
-    if (this.options.secure) {
-        if (this.options.tls) {
-            Object.keys(this.options.tls).forEach((function(key) {
-                opts[key] = this.options.tls[key];
-            }).bind(this));
-        }
-        this._socket = tls.connect(this.options.port, this.options.host, opts, this._onConnect.bind(this));
+    if (this.options.socket) {
+      this._socket = this.options.socket;
+      this._socket.connect(this.options.port, this.options.host, this._onConnect.bind(this));
     } else {
-        this._socket = net.connect(opts, this._onConnect.bind(this));
+      var opts = {
+          port: this.options.port,
+          host: this.options.host
+      };
+
+      if (this.options.localAddress) {
+          opts.localAddress = this.options.localAddress;
+      }
+
+      if (this.options.secure) {
+          if (this.options.tls) {
+              Object.keys(this.options.tls).forEach((function(key) {
+                  opts[key] = this.options.tls[key];
+              }).bind(this));
+          }
+          this._socket = tls.connect(this.options.port, this.options.host, opts, this._onConnect.bind(this));
+      } else {
+          this._socket = net.connect(opts, this._onConnect.bind(this));
+      }
     }
 
     this._connectionTimeout = setTimeout((function() {
