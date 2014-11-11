@@ -19,10 +19,9 @@ module.exports = SMTPConnection;
  *  * **port** - is the port to connect to (defaults to 25 or 465)
  *  * **host** - is the hostname or IP address to connect to (defaults to 'localhost')
  *  * **secure** - use SSL
- *  * **name** - the name of the client server
- *  * **auth** - authentication object {user:'...', pass:'...'}
  *  * **ignoreTLS** - ignore server support for STARTTLS
  *  * **requireTLS** - forces the client to use STARTTLS
+ *  * **name** - the name of the client server
  *  * **localAddress** - outbound address to bind to (see: http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener)
  *  * **greetingTimeout** - Time to wait in ms until greeting message is received from the server (defaults to 10000)
  *  * **connectionTimeout** - how many milliseconds to wait for the connection to establish
