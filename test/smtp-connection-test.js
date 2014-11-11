@@ -82,7 +82,7 @@ describe('Connection tests', function() {
         client.on('end', done);
     });
 
-    it('should connect to unserver and upgrade with STARTTLS', function(done) {
+    it('should connect to a server and upgrade with STARTTLS', function(done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER
         });

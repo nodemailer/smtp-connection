@@ -16,16 +16,20 @@ module.exports = SMTPConnection;
  *
  * Optional options object takes the following possible properties:
  *
+ *  * **port** - is the port to connect to (defaults to 25 or 465)
+ *  * **host** - is the hostname or IP address to connect to (defaults to 'localhost')
  *  * **secure** - use SSL
  *  * **name** - the name of the client server
  *  * **auth** - authentication object {user:'...', pass:'...'}
- *  * **socket** - existing socket to use instead of creating a new one (see: http://nodejs.org/api/net.html#net_class_net_socket)
  *  * **ignoreTLS** - ignore server support for STARTTLS
- *  * **tls** - options for createCredentials
- *  * **debug** - if true, emits 'log' events with all traffic between client and server
+ *  * **requireTLS** - forces the client to use STARTTLS
  *  * **localAddress** - outbound address to bind to (see: http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener)
  *  * **greetingTimeout** - Time to wait in ms until greeting message is received from the server (defaults to 10000)
+ *  * **connectionTimeout** - how many milliseconds to wait for the connection to establish
  *  * **socketTimeout** - Time of inactivity until the connection is closed (defaults to 1 hour)
+ *  * **debug** - if true, emits 'log' events with all traffic between client and server
+ *  * **tls** - options for createCredentials
+ *  * **socket** - existing socket to use instead of creating a new one (see: http://nodejs.org/api/net.html#net_class_net_socket)
  *
  * @constructor
  * @namespace SMTP Client module
@@ -138,29 +142,27 @@ SMTPConnection.prototype.connect = function(connectCallback) {
         this.once('connect', connectCallback);
     }
 
+    var opts = {
+        port: this.options.port,
+        host: this.options.host
+    };
+
+    if (this.options.localAddress) {
+        opts.localAddress = this.options.localAddress;
+    }
+
     if (this.options.socket) {
-      this._socket = this.options.socket;
-      this._socket.connect(this.options.port, this.options.host, this._onConnect.bind(this));
+        this._socket = this.options.socket;
+        this._socket.connect(this.options.port, this.options.host, this._onConnect.bind(this));
+    } else if (this.options.secure) {
+        if (this.options.tls) {
+            Object.keys(this.options.tls).forEach((function(key) {
+                opts[key] = this.options.tls[key];
+            }).bind(this));
+        }
+        this._socket = tls.connect(this.options.port, this.options.host, opts, this._onConnect.bind(this));
     } else {
-      var opts = {
-          port: this.options.port,
-          host: this.options.host
-      };
-
-      if (this.options.localAddress) {
-          opts.localAddress = this.options.localAddress;
-      }
-
-      if (this.options.secure) {
-          if (this.options.tls) {
-              Object.keys(this.options.tls).forEach((function(key) {
-                  opts[key] = this.options.tls[key];
-              }).bind(this));
-          }
-          this._socket = tls.connect(this.options.port, this.options.host, opts, this._onConnect.bind(this));
-      } else {
-          this._socket = net.connect(opts, this._onConnect.bind(this));
-      }
+        this._socket = net.connect(opts, this._onConnect.bind(this));
     }
 
     this._connectionTimeout = setTimeout((function() {
@@ -625,6 +627,11 @@ SMTPConnection.prototype._actionEHLO = function(str) {
     }
 
     if (str.charAt(0) !== '2') {
+        if (this.options.requireTLS) {
+            this._onError(new Error('EHLO failed but HELO does not support required STARTTLS:\n' + str), 'ECONNECTION', str);
+            return;
+        }
+
         // Try HELO instead
         this._currentAction = this._actionHELO;
         this._sendCommand('HELO ' + this.options.name);
@@ -632,7 +639,7 @@ SMTPConnection.prototype._actionEHLO = function(str) {
     }
 
     // Detect if the server supports STARTTLS
-    if (!this._secureMode && str.match(/[ \-]STARTTLS\r?$/mi) && !this.options.ignoreTLS) {
+    if (!this._secureMode && !this.options.ignoreTLS && (/[ \-]STARTTLS\r?$/mi.test(str) || this.options.requireTLS)) {
         this._sendCommand('STARTTLS');
         this._currentAction = this._actionSTARTTLS;
         return;

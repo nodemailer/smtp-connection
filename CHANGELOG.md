@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.0 2014-11-11
+
+  * Added additional constructor option `requireTLS` to ensure that the connection is upgraded before any credentials are passed to the server
+  * Added additional constructor option `socket` to use an existing socket instead of creating new one (bantu)
+
 ## v1.0.2 2014-10-15
 
   * Removed CleartextStream.pair.encrypted error handler. Does not seem to be supported by Node v0.11

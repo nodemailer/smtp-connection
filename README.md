@@ -27,6 +27,7 @@ Where
     * **options.host** is the hostname or IP address to connect to (defaults to 'localhost')
     * **options.secure** defines if the connection should use SSL (if `true`) or not (if `false`)
     * **options.ignoreTLS** turns off STARTTLS support if true
+    * **options.requireTLS** forces the client to use STARTTLS. Returns an error if upgrading the connection is not possible or fails.
     * **options.name** optional hostname of the client, used for identifying to the server
     * **options.localAddress** is the local interface to bind to for network connections
     * **options.connectionTimeout** how many milliseconds to wait for the connection to establish
