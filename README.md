@@ -113,7 +113,7 @@ Where
   * **envelope** is the envelope object to use
     * **envelope.from** is the sender address
     * **envelope.to** is the recipient address or an array of addresses
-  * **message** is either a String, Buffer or a Stream. All newlines in converted to \r\n and all dots are escaped automatically, no need to convert anything before.
+  * **message** is either a String, Buffer or a Stream. All newlines are converted to \r\n and all dots are escaped automatically, no need to convert anything before.
   * **callback** is the callback to run once the sending is finished or failed. Callback has the following arguments
     * **err** and error object if sending failed
       * **code** string code identifying the error, for example 'EAUTH' is returned when authentication fails
