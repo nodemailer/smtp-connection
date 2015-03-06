@@ -7,12 +7,13 @@ var chai = require('chai');
 var expect = chai.expect;
 var SMTPConnection = require('../src/smtp-connection');
 var packageData = require('../package.json');
-var simplesmtp = require('simplesmtp');
-chai.Assertion.includeStack = true;
+var SMTPServer = require('smtp-server').SMTPServer;
 var net = require('net');
 var xoauth2Server = require('./xoauth2-mock-server');
 var xoauth2 = require('xoauth2');
 var sinon = require('sinon');
+
+chai.config.includeStack = true;
 
 var PORT_NUMBER = 8397;
 var XOAUTH_PORT = 8497;
@@ -25,48 +26,73 @@ describe('Version test', function() {
 });
 
 describe('Connection tests', function() {
-    var server, invalidServer, secureServer;
+    var server, insecureServer, invalidServer, secureServer;
 
     beforeEach(function(done) {
-        server = new simplesmtp.createServer({
-            ignoreTLS: true,
-            disableDNSValidation: true
+        server = new SMTPServer({
+            disabledCommands: ['AUTH'],
+            onData: function(stream, session, callback) {
+                stream.on('data', function() {});
+                stream.on('end', callback);
+            },
+            logger: {
+                info: function() {},
+                debug: function() {},
+                error: function() {}
+            }
+        });
+
+        insecureServer = new SMTPServer({
+            disabledCommands: ['STARTTLS', 'AUTH'],
+            onData: function(stream, session, callback) {
+                stream.on('data', function() {});
+                stream.on('end', callback);
+            },
+            logger: {
+                info: function() {},
+                debug: function() {},
+                error: function() {}
+            }
         });
 
         invalidServer = net.createServer(function() {});
 
-        secureServer = new simplesmtp.createServer({
-            ignoreTLS: true,
-            disableDNSValidation: true,
-            secureConnection: true
-        });
-
-        server.on("dataReady", function(connection, callback) {
-            callback(null, "ABC1");
-        });
-
-        secureServer.on("dataReady", function(connection, callback) {
-            callback(null, "ABC1");
+        secureServer = new SMTPServer({
+            secure: true,
+            disabledCommands: ['AUTH'],
+            onData: function(stream, session, callback) {
+                stream.on('data', function() {});
+                stream.on('end', callback);
+            },
+            logger: {
+                info: function() {},
+                debug: function() {},
+                error: function() {}
+            }
         });
 
         server.listen(PORT_NUMBER, function() {
             invalidServer.listen(PORT_NUMBER + 1, function() {
-                secureServer.listen(PORT_NUMBER + 3, done);
+                secureServer.listen(PORT_NUMBER + 2, function() {
+                    insecureServer.listen(PORT_NUMBER + 3, done);
+                });
             });
         });
     });
 
     afterEach(function(done) {
-        server.end(function() {
+        server.close(function() {
             invalidServer.close(function() {
-                secureServer.end(done);
+                secureServer.close(function() {
+                    insecureServer.close(done);
+                });
             });
         });
     });
 
     it('should connect to unsecure server', function(done) {
         var client = new SMTPConnection({
-            port: PORT_NUMBER,
+            port: PORT_NUMBER + 3,
             ignoreTLS: true
         });
 
@@ -101,7 +127,7 @@ describe('Connection tests', function() {
 
     it('should connect to a secure server', function(done) {
         var client = new SMTPConnection({
-            port: PORT_NUMBER + 3,
+            port: PORT_NUMBER + 2,
             ignoreTLS: true,
             secure: true
         });
@@ -120,7 +146,7 @@ describe('Connection tests', function() {
 
     it('should emit error for invalid port', function(done) {
         var client = new SMTPConnection({
-            port: PORT_NUMBER + 2
+            port: PORT_NUMBER + 10
         });
 
         client.connect(function() {
@@ -160,28 +186,52 @@ describe('Login tests', function() {
     var server, client, testtoken = 'testtoken';
 
     beforeEach(function(done) {
-        server = new simplesmtp.createServer({
-            ignoreTLS: true,
-            disableDNSValidation: true,
-            enableAuthentication: true,
-            debug: false,
-            authMethods: ['PLAIN', 'XOAUTH2']
-        });
+        server = new SMTPServer({
+            authMethods: ['PLAIN', 'XOAUTH2'],
+            disabledCommands: ['STARTTLS'],
 
-        server.on('authorizeUser', function(connection, username, pass, callback) {
-            callback(null, username === 'testuser' && (pass === 'testpass' || pass === testtoken));
-        });
+            onData: function(stream, session, callback) {
+                stream.on('data', function() {});
+                stream.on('end', callback);
+            },
 
-        server.on('validateSender', function(connection, email, callback) {
-            callback(!/@valid.sender/.test(email) && new Error('Invalid sender'));
-        });
-
-        server.on('validateRecipient', function(connection, email, callback) {
-            callback(!/@valid.recipient/.test(email) && new Error('Invalid recipient'));
-        });
-
-        server.on("dataReady", function(connection, callback) {
-            callback(null, "ABC1");
+            onAuth: function(auth, session, callback) {
+                if (auth.method !== 'XOAUTH2') {
+                    if (auth.username !== 'testuser' || auth.password !== 'testpass') {
+                        return callback(new Error('Invalid username or password'));
+                    }
+                } else {
+                    if (auth.username !== 'testuser' || auth.accessToken !== testtoken) {
+                        return callback(null, {
+                            data: {
+                                status: '401',
+                                schemes: 'bearer mac',
+                                scope: 'my_smtp_access_scope_name'
+                            }
+                        });
+                    }
+                }
+                callback(null, {
+                    user: 123
+                });
+            },
+            onMailFrom: function(address, session, callback) {
+                if (!/@valid.sender/.test(address.address)) {
+                    return callback(new Error('Only user@valid.sender is allowed to send mail'));
+                }
+                return callback(); // Accept the address
+            },
+            onRcptTo: function(address, session, callback) {
+                if (!/@valid.recipient/.test(address.address)) {
+                    return callback(new Error('Only user@valid.recipient is allowed to receive mail'));
+                }
+                return callback(); // Accept the address
+            },
+            logger: {
+                info: function() {},
+                debug: function() {},
+                error: function() {}
+            }
         });
 
         client = new SMTPConnection({
@@ -195,7 +245,7 @@ describe('Login tests', function() {
 
     afterEach(function(done) {
         client.close();
-        server.end(done);
+        server.close(done);
     });
 
     it('should login', function(done) {
@@ -220,7 +270,6 @@ describe('Login tests', function() {
             expect(client.authenticated).to.be.false;
             expect(err.code).to.equal('EAUTH');
             expect(err.responseCode).to.equal(535);
-            expect(err.response).to.contain('535 5.7.8 Error');
             done();
         });
     });
@@ -354,7 +403,7 @@ describe('Login tests', function() {
                 expect(info).to.deep.equal({
                     accepted: ['test@valid.recipient'],
                     rejected: [],
-                    response: '250 2.0.0 Ok: queued as ABC1'
+                    response: '250 OK: message queued'
                 });
                 done();
             });
@@ -369,7 +418,7 @@ describe('Login tests', function() {
                 expect(info).to.deep.equal({
                     accepted: ['test1@valid.recipient', 'test3@valid.recipient'],
                     rejected: ['test2@invalid.recipient'],
-                    response: '250 2.0.0 Ok: queued as ABC1'
+                    response: '250 OK: message queued'
                 });
                 done();
             });

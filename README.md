@@ -1,8 +1,8 @@
 # smtp-connection
 
-Connect to SMTP servers
+SMTP client module. Connect to SMTP servers and send mail with it.
 
-This is a fork of [simplesmtp](https://github.com/andris9/simplesmtp). Includes only the client and nothing more. API is simplified and should be easier to use.
+This module is the successor for the client part of the (now deprecated) SMTP module [simplesmtp](https://www.npmjs.com/package/simplesmtp). For matching SMTP server see [smtp-server](https://www.npmjs.com/package/smtp-server).
 
 ## Usage
 
