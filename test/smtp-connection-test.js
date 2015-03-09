@@ -97,7 +97,7 @@ describe('Connection tests', function() {
         });
 
         client.connect(function() {
-            expect(client._secureMode).to.be.false;
+            expect(client.secure).to.be.false;
             client.close();
         });
 
@@ -114,7 +114,7 @@ describe('Connection tests', function() {
         });
 
         client.connect(function() {
-            expect(client._secureMode).to.be.true;
+            expect(client.secure).to.be.true;
             client.close();
         });
 
@@ -133,7 +133,7 @@ describe('Connection tests', function() {
         });
 
         client.connect(function() {
-            expect(client._secureMode).to.be.true;
+            expect(client.secure).to.be.true;
             client.close();
         });
 

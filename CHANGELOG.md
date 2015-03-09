@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.0 2015-03-09
+
+  * Connection object has a new property `secure` that indicates if the current connection is using a secure TLS socket or not
+  * Fixed `requireTLS` where the connection was established insecurely if STARTTLS failed, now it returns an error as it should if STARTTLS fails
+
 ## v1.1.0 2014-11-11
 
   * Added additional constructor option `requireTLS` to ensure that the connection is upgraded before any credentials are passed to the server

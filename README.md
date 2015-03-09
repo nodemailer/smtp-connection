@@ -62,6 +62,10 @@ Where
 
   * **callback** is the function to run once the connection is established. The function is added as a listener to the 'connect' event.
 
+After the connect event the `connection` has the following properties:
+
+  * **connection.secure** - if `true` then the connection uses a TLS socket, otherwise it is using a cleartext socket. Connection can start out as cleartext but if available (or `requireTLS` is set to true) connection upgrade is tried
+
 ### login
 
 If the server requires authentication you can login with

@@ -70,7 +70,7 @@ function SMTPConnection(options) {
      * STARTTLS can be used if available
      * @private
      */
-    this._secureMode = false;
+    this.secure = false;
 
     /**
      * Ignore incoming data on TLS negotiation
@@ -127,7 +127,7 @@ function SMTPConnection(options) {
     this._destroyed = false;
 
     if (this.options.secure) {
-        this._secureMode = true;
+        this.secure = true;
     }
 }
 utillib.inherits(SMTPConnection, EventEmitter);
@@ -467,7 +467,7 @@ SMTPConnection.prototype._upgradeConnection = function(callback) {
 
     this._socket = tls.connect(opts, function() {
         this._ignoreData = false;
-        this._secureMode = true;
+        this.secure = true;
         this._socket.on('data', this._onData.bind(this));
 
         return callback(null, true);
@@ -638,7 +638,7 @@ SMTPConnection.prototype._actionEHLO = function(str) {
     }
 
     // Detect if the server supports STARTTLS
-    if (!this._secureMode && !this.options.ignoreTLS && (/[ \-]STARTTLS\r?$/mi.test(str) || this.options.requireTLS)) {
+    if (!this.secure && !this.options.ignoreTLS && (/[ \-]STARTTLS\r?$/mi.test(str) || this.options.requireTLS)) {
         this._sendCommand('STARTTLS');
         this._currentAction = this._actionSTARTTLS;
         return;
@@ -691,9 +691,7 @@ SMTPConnection.prototype._actionHELO = function(str) {
  */
 SMTPConnection.prototype._actionSTARTTLS = function(str) {
     if (str.charAt(0) !== '2') {
-        // Try HELO instead
-        this._currentAction = this._actionHELO;
-        this._sendCommand('HELO ' + this.options.name);
+        this._onError(new Error('Error upgrading connection with STARTTLS', 'ETLS', str));
         return;
     }
 
