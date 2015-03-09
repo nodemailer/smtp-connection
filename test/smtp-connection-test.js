@@ -35,11 +35,7 @@ describe('Connection tests', function() {
                 stream.on('data', function() {});
                 stream.on('end', callback);
             },
-            logger: {
-                info: function() {},
-                debug: function() {},
-                error: function() {}
-            }
+            logger: false
         });
 
         insecureServer = new SMTPServer({
@@ -48,11 +44,7 @@ describe('Connection tests', function() {
                 stream.on('data', function() {});
                 stream.on('end', callback);
             },
-            logger: {
-                info: function() {},
-                debug: function() {},
-                error: function() {}
-            }
+            logger: false
         });
 
         invalidServer = net.createServer(function() {});
@@ -64,11 +56,7 @@ describe('Connection tests', function() {
                 stream.on('data', function() {});
                 stream.on('end', callback);
             },
-            logger: {
-                info: function() {},
-                debug: function() {},
-                error: function() {}
-            }
+            logger: false
         });
 
         server.listen(PORT_NUMBER, function() {
@@ -120,6 +108,25 @@ describe('Connection tests', function() {
 
         client.on('error', function(err) {
             expect(err).to.not.exist;
+        });
+
+        client.on('end', done);
+    });
+
+    it('should try upgrade with STARTTLS where not advertised', function(done) {
+        var client = new SMTPConnection({
+            port: PORT_NUMBER + 3,
+            requireTLS: true
+        });
+
+        client.connect(function() {
+            // should not run
+            expect(false).to.be.true;
+            client.close();
+        });
+
+        client.once('error', function(err) {
+            expect(err).to.exist;
         });
 
         client.on('end', done);
@@ -227,11 +234,7 @@ describe('Login tests', function() {
                 }
                 return callback(); // Accept the address
             },
-            logger: {
-                info: function() {},
-                debug: function() {},
-                error: function() {}
-            }
+            logger: false
         });
 
         client = new SMTPConnection({
