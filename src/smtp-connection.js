@@ -26,6 +26,7 @@ module.exports = SMTPConnection;
  *  * **greetingTimeout** - Time to wait in ms until greeting message is received from the server (defaults to 10000)
  *  * **connectionTimeout** - how many milliseconds to wait for the connection to establish
  *  * **socketTimeout** - Time of inactivity until the connection is closed (defaults to 1 hour)
+ *  * **lmtp** - if true, uses LMTP instead of SMTP protocol
  *  * **debug** - if true, emits 'log' events with all traffic between client and server
  *  * **tls** - options for createCredentials
  *  * **socket** - existing socket to use instead of creating a new one (see: http://nodejs.org/api/net.html#net_class_net_socket)
@@ -607,8 +608,28 @@ SMTPConnection.prototype._actionGreeting = function(str) {
         return;
     }
 
-    this._currentAction = this._actionEHLO;
-    this._sendCommand('EHLO ' + this.options.name);
+    if (this.options.lmtp) {
+        this._currentAction = this._actionLHLO;
+        this._sendCommand('LHLO ' + this.options.name);
+    } else {
+        this._currentAction = this._actionEHLO;
+        this._sendCommand('EHLO ' + this.options.name);
+    }
+};
+
+/**
+ * Handles server response for LHLO command. If it yielded in
+ * error, emit 'error', otherwise treat this as an EHLO response
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionLHLO = function(str) {
+    if (str.charAt(0) !== '2') {
+        this._onError(new Error('Invalid response for LHLO:\n' + str), 'EPROTOCOL', str);
+        return;
+    }
+
+    this._actionEHLO(str);
 };
 
 /**

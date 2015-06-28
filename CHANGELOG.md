@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0 2015-03-09
+
+  * Added partial support for LMTP protocol. Works only with single recipient (does not support multiple responses for DATA command)
+
 ## v1.2.0 2015-03-09
 
   * Connection object has a new property `secure` that indicates if the current connection is using a secure TLS socket or not
