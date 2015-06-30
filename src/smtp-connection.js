@@ -500,6 +500,10 @@ SMTPConnection.prototype._processResponse = function() {
         });
     }
 
+    if (!str.trim()) { // skip unexpected empty lines
+        setImmediate(this._processResponse.bind(this, true));
+    }
+
     var action = this._currentAction;
     this._currentAction = null;
 
