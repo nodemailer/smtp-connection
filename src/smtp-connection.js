@@ -19,6 +19,7 @@ module.exports = SMTPConnection;
  *  * **port** - is the port to connect to (defaults to 25 or 465)
  *  * **host** - is the hostname or IP address to connect to (defaults to 'localhost')
  *  * **secure** - use SSL
+ *  * **useTLS** - defaults to true, when false, same as ignoreTLS = true
  *  * **ignoreTLS** - ignore server support for STARTTLS
  *  * **requireTLS** - forces the client to use STARTTLS
  *  * **name** - the name of the client server
@@ -41,6 +42,7 @@ function SMTPConnection(options) {
     this.stage = 'init';
 
     this.options = options || {};
+    this.options.useTLS = this.options.useTLS || !this.options.ignoreTLS;
 
     this.options.port = this.options.port || (this.options.secure ? 465 : 25);
     this.options.host = this.options.host || 'localhost';
@@ -663,7 +665,7 @@ SMTPConnection.prototype._actionEHLO = function(str) {
     }
 
     // Detect if the server supports STARTTLS
-    if (!this.secure && !this.options.ignoreTLS && (/[ \-]STARTTLS\r?$/mi.test(str) || this.options.requireTLS)) {
+    if (!this.secure && this.options.useTLS && (/[ \-]STARTTLS\r?$/mi.test(str) || this.options.requireTLS)) {
         this._sendCommand('STARTTLS');
         this._currentAction = this._actionSTARTTLS;
         return;
