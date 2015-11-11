@@ -394,6 +394,7 @@ SMTPConnection.prototype._formatError = function(message, type, response) {
 
     if (response) {
         err.response = response;
+        err.message += (':' + response);
     }
 
     var responseCode = typeof response === 'string' && Number((response.match(/^\d+/) || [])[0]) || false;
