@@ -561,7 +561,10 @@ SMTPConnection.prototype._setEnvelope = function(envelope, callback) {
     this._envelope.from = this._envelope.from && this._envelope.from.address || this._envelope.from || '';
 
     this._envelope.to = [].concat(this._envelope.to || []).map(function(to) {
-        return to && to.address || to;
+        var get_just_address = /<(.*)>/g;
+        var extracted_address = get_just_address.exec(to);
+        extracted_address = extracted_address.length > 0 ? extracted_address[1] : null;
+        return extracted_address || to && to.address || to;
     });
 
     if (!this._envelope.to.length) {
