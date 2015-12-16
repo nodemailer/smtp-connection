@@ -394,7 +394,7 @@ SMTPConnection.prototype._formatError = function(message, type, response) {
 
     if (response) {
         err.response = response;
-        err.message += (':' + response);
+        err.message += ': ' + response;
     }
 
     var responseCode = typeof response === 'string' && Number((response.match(/^\d+/) || [])[0]) || false;
@@ -474,7 +474,13 @@ SMTPConnection.prototype._upgradeConnection = function(callback) {
 
         return callback(null, true);
     }.bind(this));
+
     this._socket.on('error', this._onError.bind(this));
+    this._socket.once('close', this._onClose.bind(this));
+    this._socket.once('end', this._onEnd.bind(this));
+
+    this._socket.setTimeout(this.options.socketTimeout || (10 * 60 * 1000)); // 10 min.
+    this._socket.on('timeout', this._onTimeout.bind(this));
 };
 
 /**

@@ -18,21 +18,21 @@ chai.config.includeStack = true;
 var PORT_NUMBER = 8397;
 var XOAUTH_PORT = 8497;
 
-describe('Version test', function() {
-    it('Should expose version number', function() {
+describe('Version test', function () {
+    it('Should expose version number', function () {
         var client = new SMTPConnection();
         expect(client.version).to.equal(packageData.version);
     });
 });
 
-describe('Connection tests', function() {
+describe('Connection tests', function () {
     var server, insecureServer, invalidServer, secureServer;
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
         server = new SMTPServer({
             disabledCommands: ['AUTH'],
-            onData: function(stream, session, callback) {
-                stream.on('data', function() {});
+            onData: function (stream, session, callback) {
+                stream.on('data', function () {});
                 stream.on('end', callback);
             },
             logger: false
@@ -40,146 +40,165 @@ describe('Connection tests', function() {
 
         insecureServer = new SMTPServer({
             disabledCommands: ['STARTTLS', 'AUTH'],
-            onData: function(stream, session, callback) {
-                stream.on('data', function() {});
+            onData: function (stream, session, callback) {
+                stream.on('data', function () {});
                 stream.on('end', callback);
             },
             logger: false
         });
 
-        invalidServer = net.createServer(function() {});
+        invalidServer = net.createServer(function () {});
 
         secureServer = new SMTPServer({
             secure: true,
             disabledCommands: ['AUTH'],
-            onData: function(stream, session, callback) {
-                stream.on('data', function() {});
+            onData: function (stream, session, callback) {
+                stream.on('data', function () {});
                 stream.on('end', callback);
             },
             logger: false
         });
 
-        server.listen(PORT_NUMBER, function() {
-            invalidServer.listen(PORT_NUMBER + 1, function() {
-                secureServer.listen(PORT_NUMBER + 2, function() {
+        server.listen(PORT_NUMBER, function () {
+            invalidServer.listen(PORT_NUMBER + 1, function () {
+                secureServer.listen(PORT_NUMBER + 2, function () {
                     insecureServer.listen(PORT_NUMBER + 3, done);
                 });
             });
         });
     });
 
-    afterEach(function(done) {
-        server.close(function() {
-            invalidServer.close(function() {
-                secureServer.close(function() {
+    afterEach(function (done) {
+        server.close(function () {
+            invalidServer.close(function () {
+                secureServer.close(function () {
                     insecureServer.close(done);
                 });
             });
         });
     });
 
-    it('should connect to unsecure server', function(done) {
+    it('should connect to unsecure server', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 3,
             ignoreTLS: true
         });
 
-        client.connect(function() {
+        client.connect(function () {
             expect(client.secure).to.be.false;
             client.close();
         });
 
-        client.on('error', function(err) {
+        client.on('error', function (err) {
             expect(err).to.not.exist;
         });
 
         client.on('end', done);
     });
 
-    it('should connect to a server and upgrade with STARTTLS', function(done) {
+    it('should connect to a server and upgrade with STARTTLS', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER
         });
 
-        client.connect(function() {
+        client.connect(function () {
             expect(client.secure).to.be.true;
             client.close();
         });
 
-        client.on('error', function(err) {
+        client.on('error', function (err) {
             expect(err).to.not.exist;
         });
 
         client.on('end', done);
     });
 
-    it('should try upgrade with STARTTLS where not advertised', function(done) {
+    it('should try upgrade with STARTTLS where not advertised', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 3,
             requireTLS: true
         });
 
-        client.connect(function() {
+        client.connect(function () {
             // should not run
             expect(false).to.be.true;
             client.close();
         });
 
-        client.once('error', function(err) {
+        client.once('error', function (err) {
             expect(err).to.exist;
         });
 
         client.on('end', done);
     });
 
-    it('should connect to a secure server', function(done) {
+    it('should receive end after STARTTLS', function (done) {
+        var client = new SMTPConnection({
+            port: PORT_NUMBER
+        });
+
+        client.connect(function () {
+            expect(client.secure).to.be.true;
+            server.connections.forEach(function (conn) {
+                conn.close();
+            });
+        });
+
+        client.on('error', function (err) {
+            expect(err).to.not.exist;
+        });
+
+        client.on('end', done);
+    });
+
+    it('should connect to a secure server', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 2,
             ignoreTLS: true,
             secure: true
         });
 
-        client.connect(function() {
+        client.connect(function () {
             expect(client.secure).to.be.true;
             client.close();
         });
 
-        client.on('error', function(err) {
+        client.on('error', function (err) {
             expect(err).to.not.exist;
         });
 
         client.on('end', done);
     });
 
-    it('should emit error for invalid port', function(done) {
+    it('should emit error for invalid port', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 10
         });
 
-        client.connect(function() {
+        client.connect(function () {
             // should not run
             expect(false).to.be.true;
             client.close();
         });
 
-        client.once('error', function(err) {
+        client.once('error', function (err) {
             expect(err).to.exist;
         });
 
         client.on('end', done);
     });
 
-    it('should emit inactivity timeout error', function(done) {
+    it('should emit inactivity timeout error', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER,
             socketTimeout: 100
         });
 
-        client.connect(function() {
+        client.connect(function () {
             // do nothing
         });
 
-        client.once('error', function(err) {
+        client.once('error', function (err) {
             expect(err).to.exist;
         });
 
@@ -187,22 +206,22 @@ describe('Connection tests', function() {
     });
 });
 
-describe('Login tests', function() {
+describe('Login tests', function () {
     this.timeout(10 * 1000);
 
     var server, client, testtoken = 'testtoken';
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
         server = new SMTPServer({
             authMethods: ['PLAIN', 'XOAUTH2'],
             disabledCommands: ['STARTTLS'],
 
-            onData: function(stream, session, callback) {
-                stream.on('data', function() {});
+            onData: function (stream, session, callback) {
+                stream.on('data', function () {});
                 stream.on('end', callback);
             },
 
-            onAuth: function(auth, session, callback) {
+            onAuth: function (auth, session, callback) {
                 if (auth.method !== 'XOAUTH2') {
                     if (auth.username !== 'testuser' || auth.password !== 'testpass') {
                         return callback(new Error('Invalid username or password'));
@@ -222,13 +241,13 @@ describe('Login tests', function() {
                     user: 123
                 });
             },
-            onMailFrom: function(address, session, callback) {
+            onMailFrom: function (address, session, callback) {
                 if (!/@valid.sender/.test(address.address)) {
                     return callback(new Error('Only user@valid.sender is allowed to send mail'));
                 }
                 return callback(); // Accept the address
             },
-            onRcptTo: function(address, session, callback) {
+            onRcptTo: function (address, session, callback) {
                 if (!/@valid.recipient/.test(address.address)) {
                     return callback(new Error('Only user@valid.recipient is allowed to receive mail'));
                 }
@@ -241,34 +260,34 @@ describe('Login tests', function() {
             port: PORT_NUMBER
         });
 
-        server.listen(PORT_NUMBER, function() {
+        server.listen(PORT_NUMBER, function () {
             client.connect(done);
         });
     });
 
-    afterEach(function(done) {
+    afterEach(function (done) {
         client.close();
         server.close(done);
     });
 
-    it('should login', function(done) {
+    it('should login', function (done) {
         expect(client.authenticated).to.be.false;
         client.login({
             user: 'testuser',
             pass: 'testpass'
-        }, function(err) {
+        }, function (err) {
             expect(err).to.not.exist;
             expect(client.authenticated).to.be.true;
             done();
         });
     });
 
-    it('should return error for invalid login', function(done) {
+    it('should return error for invalid login', function (done) {
         expect(client.authenticated).to.be.false;
         client.login({
             user: 'testuser',
             pass: 'invalid'
-        }, function(err) {
+        }, function (err) {
             expect(err).to.exist;
             expect(client.authenticated).to.be.false;
             expect(err.code).to.equal('EAUTH');
@@ -277,14 +296,14 @@ describe('Login tests', function() {
         });
     });
 
-    describe('xoauth2 login', function() {
+    describe('xoauth2 login', function () {
         this.timeout(10 * 1000);
         var x2server;
 
-        beforeEach(function(done) {
+        beforeEach(function (done) {
             x2server = xoauth2Server({
                 port: XOAUTH_PORT,
-                onUpdate: (function(username, accessToken) {
+                onUpdate: (function (username, accessToken) {
                     testtoken = accessToken;
                 }).bind(this)
             });
@@ -294,28 +313,28 @@ describe('Login tests', function() {
             x2server.start(done);
         });
 
-        afterEach(function(done) {
+        afterEach(function (done) {
             x2server.stop(done);
         });
 
-        it('should login with xoauth2 string', function(done) {
+        it('should login with xoauth2 string', function (done) {
             expect(client.authenticated).to.be.false;
             client.login({
                 user: 'testuser',
                 xoauth2: testtoken
-            }, function(err) {
+            }, function (err) {
                 expect(err).to.not.exist;
                 expect(client.authenticated).to.be.true;
                 done();
             });
         });
 
-        it('should return error for invalid xoauth2 string token', function(done) {
+        it('should return error for invalid xoauth2 string token', function (done) {
             expect(client.authenticated).to.be.false;
             client.login({
                 user: 'testuser',
                 xoauth2: 'invalid'
-            }, function(err) {
+            }, function (err) {
                 expect(err).to.exist;
                 expect(client.authenticated).to.be.false;
                 expect(err.code).to.equal('EAUTH');
@@ -323,7 +342,7 @@ describe('Login tests', function() {
             });
         });
 
-        it('should login with xoauth2 object', function(done) {
+        it('should login with xoauth2 object', function (done) {
             expect(client.authenticated).to.be.false;
             client.login({
                 xoauth2: xoauth2.createXOAuth2Generator({
@@ -334,14 +353,14 @@ describe('Login tests', function() {
                     accessToken: 'uuuuu',
                     accessUrl: 'http://localhost:' + XOAUTH_PORT
                 })
-            }, function(err) {
+            }, function (err) {
                 expect(err).to.not.exist;
                 expect(client.authenticated).to.be.true;
                 done();
             });
         });
 
-        it('should fail with xoauth2 object', function(done) {
+        it('should fail with xoauth2 object', function (done) {
             expect(client.authenticated).to.be.false;
             client.login({
                 xoauth2: xoauth2.createXOAuth2Generator({
@@ -352,14 +371,14 @@ describe('Login tests', function() {
                     accessToken: 'uuuuu',
                     accessUrl: 'http://localhost:' + XOAUTH_PORT
                 })
-            }, function(err) {
+            }, function (err) {
                 expect(err).to.exist;
                 expect(client.authenticated).to.be.false;
                 done();
             });
         });
 
-        it('should fail with invalid xoauth2 response', function(done) {
+        it('should fail with invalid xoauth2 response', function (done) {
             expect(client.authenticated).to.be.false;
 
             var x2gen = xoauth2.createXOAuth2Generator({
@@ -375,7 +394,7 @@ describe('Login tests', function() {
 
             client.login({
                 xoauth2: x2gen
-            }, function(err) {
+            }, function (err) {
                 expect(err).to.exist;
                 expect(client.authenticated).to.be.false;
 
@@ -386,22 +405,22 @@ describe('Login tests', function() {
 
     });
 
-    describe('Send messages', function() {
-        beforeEach(function(done) {
+    describe('Send messages', function () {
+        beforeEach(function (done) {
             client.login({
                 user: 'testuser',
                 pass: 'testpass'
-            }, function(err) {
+            }, function (err) {
                 expect(err).to.not.exist;
                 done();
             });
         });
 
-        it('should send message', function(done) {
+        it('should send message', function (done) {
             client.send({
                 from: 'test@valid.sender',
                 to: 'test@valid.recipient'
-            }, 'test', function(err, info) {
+            }, 'test', function (err, info) {
                 expect(err).to.not.exist;
                 expect(info).to.deep.equal({
                     accepted: ['test@valid.recipient'],
@@ -412,11 +431,11 @@ describe('Login tests', function() {
             });
         });
 
-        it('should send only to valid recipients', function(done) {
+        it('should send only to valid recipients', function (done) {
             client.send({
                 from: 'test@valid.sender',
                 to: ['test1@valid.recipient', 'test2@invalid.recipient', 'test3@valid.recipient']
-            }, 'test', function(err, info) {
+            }, 'test', function (err, info) {
                 expect(err).to.not.exist;
                 expect(info).to.deep.equal({
                     accepted: ['test1@valid.recipient', 'test3@valid.recipient'],
@@ -427,36 +446,36 @@ describe('Login tests', function() {
             });
         });
 
-        it('should return error for no valid recipients', function(done) {
+        it('should return error for no valid recipients', function (done) {
             client.send({
                 from: 'test@valid.sender',
                 to: ['test1@invalid.recipient', 'test2@invalid.recipient', 'test3@invalid.recipient']
-            }, 'test', function(err) {
+            }, 'test', function (err) {
                 expect(err).to.exist;
                 done();
             });
         });
 
-        it('should return error for invalid sender', function(done) {
+        it('should return error for invalid sender', function (done) {
             client.send({
                 from: 'test@invalid.sender',
                 to: 'test@valid.recipient'
-            }, 'test', function(err) {
+            }, 'test', function (err) {
                 expect(err).to.exist;
                 done();
             });
         });
 
-        it('should send message string', function(done) {
+        it('should send message string', function (done) {
             var chunks = [],
                 message = new Array(1024).join('teretere, vana kere\n');
 
-            server.on('data', function(connection, chunk) {
+            server.on('data', function (connection, chunk) {
                 chunks.push(chunk);
             });
 
             server.removeAllListeners('dataReady');
-            server.on('dataReady', function(connection, callback) {
+            server.on('dataReady', function (connection, callback) {
                 var body = Buffer.concat(chunks);
                 expect(body.toString()).to.equal(message.trim().replace(/\n/g, '\r\n'));
                 callback(null, 'ABC1');
@@ -465,22 +484,22 @@ describe('Login tests', function() {
             client.send({
                 from: 'test@valid.sender',
                 to: 'test@valid.recipient'
-            }, message, function(err) {
+            }, message, function (err) {
                 expect(err).to.not.exist;
                 done();
             });
         });
 
-        it('should send message buffer', function(done) {
+        it('should send message buffer', function (done) {
             var chunks = [],
                 message = new Buffer(new Array(1024).join('teretere, vana kere\n'));
 
-            server.on('data', function(connection, chunk) {
+            server.on('data', function (connection, chunk) {
                 chunks.push(chunk);
             });
 
             server.removeAllListeners('dataReady');
-            server.on('dataReady', function(connection, callback) {
+            server.on('dataReady', function (connection, callback) {
                 var body = Buffer.concat(chunks);
                 expect(body.toString()).to.equal(message.toString().trim().replace(/\n/g, '\r\n'));
                 callback(null, 'ABC1');
@@ -489,23 +508,23 @@ describe('Login tests', function() {
             client.send({
                 from: 'test@valid.sender',
                 to: 'test@valid.recipient'
-            }, message, function(err) {
+            }, message, function (err) {
                 expect(err).to.not.exist;
                 done();
             });
         });
 
-        it('should send message stream', function(done) {
+        it('should send message stream', function (done) {
             var chunks = [],
                 fname = __dirname + '/../LICENSE',
                 message = fs.readFileSync(fname, 'utf-8');
 
-            server.on('data', function(connection, chunk) {
+            server.on('data', function (connection, chunk) {
                 chunks.push(chunk);
             });
 
             server.removeAllListeners('dataReady');
-            server.on('dataReady', function(connection, callback) {
+            server.on('dataReady', function (connection, callback) {
                 var body = Buffer.concat(chunks);
                 expect(body.toString()).to.equal(message.toString().trim().replace(/\n/g, '\r\n'));
                 callback(null, 'ABC1');
@@ -514,7 +533,7 @@ describe('Login tests', function() {
             client.send({
                 from: 'test@valid.sender',
                 to: 'test@valid.recipient'
-            }, fs.createReadStream(fname), function(err) {
+            }, fs.createReadStream(fname), function (err) {
                 expect(err).to.not.exist;
                 done();
             });
