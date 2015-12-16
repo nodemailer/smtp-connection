@@ -1,6 +1,10 @@
 # Changelog
 
-## v1.3.0 2015-03-09
+## v1.3.2 2015-12-16
+
+  * Added missing 'close' and 'end' event handlers for a STARTTLS-upgraded socket
+
+## v1.3.1 2015-06-30
 
   * Added partial support for LMTP protocol. Works only with single recipient (does not support multiple responses for DATA command)
 
