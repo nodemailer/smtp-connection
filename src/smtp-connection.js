@@ -74,12 +74,6 @@ function SMTPConnection(options) {
     this.secure = false;
 
     /**
-     * Ignore incoming data on TLS negotiation
-     * @private
-     */
-    this._ignoreData = false;
-
-    /**
      * Store incomplete messages coming from the server
      * @private
      */
@@ -333,7 +327,7 @@ SMTPConnection.prototype._onConnect = function() {
  * @param {Buffer} chunk Data chunk coming from the server
  */
 SMTPConnection.prototype._onData = function(chunk) {
-    if (this._ignoreData || this._destroyed || !chunk || !chunk.length) {
+    if (this._destroyed || !chunk || !chunk.length) {
         return;
     }
 
@@ -454,9 +448,7 @@ SMTPConnection.prototype._destroy = function() {
  *        has been secured
  */
 SMTPConnection.prototype._upgradeConnection = function(callback) {
-    this._ignoreData = true;
-    this._socket.removeAllListeners('data');
-    this._socket.removeAllListeners('error');
+    this._socket.removeAllListeners();
 
     var opts = {
         socket: this._socket,
@@ -468,7 +460,6 @@ SMTPConnection.prototype._upgradeConnection = function(callback) {
     }).bind(this));
 
     this._socket = tls.connect(opts, function() {
-        this._ignoreData = false;
         this.secure = true;
         this._socket.on('data', this._onData.bind(this));
 
