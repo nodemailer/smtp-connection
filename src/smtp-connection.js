@@ -562,12 +562,22 @@ SMTPConnection.prototype._setEnvelope = function (envelope, callback) {
         return callback(this._formatError('No recipients defined', 'EENVELOPE'));
     }
 
-    if (this._envelope.from && !isemail(this._envelope.from)) {
+    if (this._envelope.from &&
+        isemail(this._envelope.from,
+            // isemail non smtp compatible error codes start from 17
+            {
+                errorLevel: 16
+            }) !== 0) {
         return callback(this._formatError('Invalid sender ' + JSON.stringify(this._envelope.from), 'EENVELOPE'));
     }
 
     for (var i = 0, len = this._envelope.to.length; i < len; i++) {
-        if (!this._envelope.to[i] || !isemail(this._envelope.to[i])) {
+        if (!this._envelope.to[i] ||
+            isemail(this._envelope.to[i],
+                // isemail non smtp compatible error codes start from 17
+                {
+                    errorLevel: 16
+                }) !== 0) {
             return callback(this._formatError('Invalid recipient ' + JSON.stringify(this._envelope.to[i]), 'EENVELOPE'));
         }
     }
