@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.5 2015-12-19
+
+  * Validate to and from address to be valid e-mail addresses
+
 ## v1.3.2 2015-12-16
 
   * Added missing 'close' and 'end' event handlers for a STARTTLS-upgraded socket
