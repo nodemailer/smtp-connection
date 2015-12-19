@@ -33,6 +33,6 @@
     "xoauth2": "^1.1.0"
   },
   "dependencies": {
-    "isemail": "^2.1.0"
+    "isemail": "^1.2.0"
   }
 }
