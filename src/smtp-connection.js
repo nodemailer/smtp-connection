@@ -8,6 +8,7 @@ var tls = require('tls');
 var os = require('os');
 var crypto = require('crypto');
 var DataStream = require('./data-stream');
+var isemail = require('isemail');
 
 module.exports = SMTPConnection;
 
@@ -131,7 +132,7 @@ utillib.inherits(SMTPConnection, EventEmitter);
  * Creates a connection to a SMTP server and sets up connection
  * listener
  */
-SMTPConnection.prototype.connect = function(connectCallback) {
+SMTPConnection.prototype.connect = function (connectCallback) {
     if (typeof connectCallback === 'function') {
         this.once('connect', connectCallback);
     }
@@ -150,7 +151,7 @@ SMTPConnection.prototype.connect = function(connectCallback) {
         this._socket.connect(this.options.port, this.options.host, this._onConnect.bind(this));
     } else if (this.options.secure) {
         if (this.options.tls) {
-            Object.keys(this.options.tls).forEach((function(key) {
+            Object.keys(this.options.tls).forEach((function (key) {
                 opts[key] = this.options.tls[key];
             }).bind(this));
         }
@@ -159,7 +160,7 @@ SMTPConnection.prototype.connect = function(connectCallback) {
         this._socket = net.connect(opts, this._onConnect.bind(this));
     }
 
-    this._connectionTimeout = setTimeout((function() {
+    this._connectionTimeout = setTimeout((function () {
         this._onError('Connection timeout', 'ETIMEDOUT');
     }).bind(this), this.options.connectionTimeout || 60 * 1000);
 
@@ -169,7 +170,7 @@ SMTPConnection.prototype.connect = function(connectCallback) {
 /**
  * Sends QUIT
  */
-SMTPConnection.prototype.quit = function() {
+SMTPConnection.prototype.quit = function () {
     this._sendCommand('QUIT');
     this._currentAction = this.close;
 };
@@ -177,7 +178,7 @@ SMTPConnection.prototype.quit = function() {
 /**
  * Closes the connection to the server
  */
-SMTPConnection.prototype.close = function() {
+SMTPConnection.prototype.close = function () {
     clearTimeout(this._connectionTimeout);
     clearTimeout(this._greetingTimeout);
 
@@ -200,7 +201,9 @@ SMTPConnection.prototype.close = function() {
     if (socket && !socket.destroyed) {
         try {
             this._socket[closeMethod]();
-        } catch (E) {}
+        } catch (E) {
+            // just ignore
+        }
     }
 
     this._destroy();
@@ -209,7 +212,7 @@ SMTPConnection.prototype.close = function() {
 /**
  * Authenticate user
  */
-SMTPConnection.prototype.login = function(authData, callback) {
+SMTPConnection.prototype.login = function (authData, callback) {
     this._auth = authData || {};
 
     var authMethod;
@@ -227,13 +230,13 @@ SMTPConnection.prototype.login = function(authData, callback) {
             this._handleXOauth2Token(false, callback);
             return;
         case 'LOGIN':
-            this._currentAction = function(str) {
+            this._currentAction = function (str) {
                 this._actionAUTH_LOGIN_USER(str, callback);
             }.bind(this);
             this._sendCommand('AUTH LOGIN');
             return;
         case 'PLAIN':
-            this._currentAction = function(str) {
+            this._currentAction = function (str) {
                 this._actionAUTHComplete(str, callback);
             }.bind(this);
             this._sendCommand('AUTH PLAIN ' + new Buffer(
@@ -243,7 +246,7 @@ SMTPConnection.prototype.login = function(authData, callback) {
                 this._auth.pass, 'utf-8').toString('base64'));
             return;
         case 'CRAM-MD5':
-            this._currentAction = function(str) {
+            this._currentAction = function (str) {
                 this._actionAUTH_CRAM_MD5(str, callback);
             }.bind(this);
             this._sendCommand('AUTH CRAM-MD5');
@@ -260,16 +263,16 @@ SMTPConnection.prototype.login = function(authData, callback) {
  * @param {Object} message String, Buffer or a Stream
  * @param {Function} callback Callback to return once sending is completed
  */
-SMTPConnection.prototype.send = function(envelope, message, callback) {
+SMTPConnection.prototype.send = function (envelope, message, callback) {
     if (!message) {
         return callback(this._formatError('Empty message', 'EMESSAGE'));
     }
 
-    this._setEnvelope(envelope, function(err, info) {
+    this._setEnvelope(envelope, function (err, info) {
         if (err) {
             return callback(err);
         }
-        var stream = this._createSendStream(function(err, str) {
+        var stream = this._createSendStream(function (err, str) {
             if (err) {
                 return callback(err);
             }
@@ -292,7 +295,7 @@ SMTPConnection.prototype.send = function(envelope, message, callback) {
  *
  * @event
  */
-SMTPConnection.prototype._onConnect = function() {
+SMTPConnection.prototype._onConnect = function () {
     clearTimeout(this._connectionTimeout);
 
     if (this._destroyed) {
@@ -310,7 +313,7 @@ SMTPConnection.prototype._onConnect = function() {
     this._socket.setTimeout(this.options.socketTimeout || (10 * 60 * 1000)); // 10 min.
     this._socket.on('timeout', this._onTimeout.bind(this));
 
-    this._greetingTimeout = setTimeout((function() {
+    this._greetingTimeout = setTimeout((function () {
         // if still waiting for greeting, give up
         if (this._socket && !this._destroyed && this._currentAction === this._actionGreeting) {
             this._onError('Greeting never received', 'ETIMEDOUT');
@@ -326,7 +329,7 @@ SMTPConnection.prototype._onConnect = function() {
  * @event
  * @param {Buffer} chunk Data chunk coming from the server
  */
-SMTPConnection.prototype._onData = function(chunk) {
+SMTPConnection.prototype._onData = function (chunk) {
     if (this._destroyed || !chunk || !chunk.length) {
         return;
     }
@@ -358,7 +361,7 @@ SMTPConnection.prototype._onData = function(chunk) {
  * @param {Error} err Error object
  * @param {String} type Error name
  */
-SMTPConnection.prototype._onError = function(err, type, data) {
+SMTPConnection.prototype._onError = function (err, type, data) {
     clearTimeout(this._connectionTimeout);
     clearTimeout(this._greetingTimeout);
 
@@ -373,7 +376,7 @@ SMTPConnection.prototype._onError = function(err, type, data) {
     this.close();
 };
 
-SMTPConnection.prototype._formatError = function(message, type, response) {
+SMTPConnection.prototype._formatError = function (message, type, response) {
     var err;
 
     if (/Error\]$/i.test(Object.prototype.toString.call(message))) {
@@ -404,7 +407,7 @@ SMTPConnection.prototype._formatError = function(message, type, response) {
  *
  * @event
  */
-SMTPConnection.prototype._onClose = function() {
+SMTPConnection.prototype._onClose = function () {
     if ([this._actionGreeting, this.close].indexOf(this._currentAction) < 0 && !this._destroyed) {
         return this._onError(new Error('Connection closed unexpectedly'));
     }
@@ -417,7 +420,7 @@ SMTPConnection.prototype._onClose = function() {
  *
  * @event
  */
-SMTPConnection.prototype._onEnd = function() {
+SMTPConnection.prototype._onEnd = function () {
     this._destroy();
 };
 
@@ -426,14 +429,14 @@ SMTPConnection.prototype._onEnd = function() {
  *
  * @event
  */
-SMTPConnection.prototype._onTimeout = function() {
+SMTPConnection.prototype._onTimeout = function () {
     return this._onError(new Error('Timeout'), 'ETIMEOUT');
 };
 
 /**
  * Destroys the client, emits 'end'
  */
-SMTPConnection.prototype._destroy = function() {
+SMTPConnection.prototype._destroy = function () {
     if (this._destroyed) {
         return;
     }
@@ -447,7 +450,7 @@ SMTPConnection.prototype._destroy = function() {
  * @param {Function} callback Callback function to run when the connection
  *        has been secured
  */
-SMTPConnection.prototype._upgradeConnection = function(callback) {
+SMTPConnection.prototype._upgradeConnection = function (callback) {
     this._socket.removeAllListeners();
 
     var opts = {
@@ -455,11 +458,11 @@ SMTPConnection.prototype._upgradeConnection = function(callback) {
         host: this.options.host
     };
 
-    Object.keys(this.options.tls || {}).forEach((function(key) {
+    Object.keys(this.options.tls || {}).forEach((function (key) {
         opts[key] = this.options.tls[key];
     }).bind(this));
 
-    this._socket = tls.connect(opts, function() {
+    this._socket = tls.connect(opts, function () {
         this.secure = true;
         this._socket.on('data', this._onData.bind(this));
 
@@ -479,7 +482,7 @@ SMTPConnection.prototype._upgradeConnection = function(callback) {
  *
  * @param {Boolean} force If true, ignores _processing flag
  */
-SMTPConnection.prototype._processResponse = function() {
+SMTPConnection.prototype._processResponse = function () {
     if (!this._responseQueue.length) {
         return false;
     }
@@ -518,7 +521,7 @@ SMTPConnection.prototype._processResponse = function() {
  *
  * @param {String} str String to be sent to the server
  */
-SMTPConnection.prototype._sendCommand = function(str) {
+SMTPConnection.prototype._sendCommand = function (str) {
     if (this._destroyed) {
         // Connection already closed, can't send any more data
         return;
@@ -547,16 +550,26 @@ SMTPConnection.prototype._sendCommand = function(str) {
  *        or
  *        {from:{address:'...',name:'...'}, to:[address:'...',name:'...']}
  */
-SMTPConnection.prototype._setEnvelope = function(envelope, callback) {
+SMTPConnection.prototype._setEnvelope = function (envelope, callback) {
     this._envelope = envelope || {};
-    this._envelope.from = this._envelope.from && this._envelope.from.address || this._envelope.from || '';
+    this._envelope.from = (this._envelope.from && this._envelope.from.address || this._envelope.from || '').toString().trim();
 
-    this._envelope.to = [].concat(this._envelope.to || []).map(function(to) {
-        return to && to.address || to;
+    this._envelope.to = [].concat(this._envelope.to || []).map(function (to) {
+        return (to && to.address || to || '').toString().trim();
     });
 
     if (!this._envelope.to.length) {
         return callback(this._formatError('No recipients defined', 'EENVELOPE'));
+    }
+
+    if (this._envelope.from && !isemail.validate(this._envelope.from)) {
+        return callback(this._formatError('Invalid sender ' + JSON.stringify(this._envelope.from), 'EENVELOPE'));
+    }
+
+    for (var i = 0, len = this._envelope.to.length; i < len; i++) {
+        if (!this._envelope.to[i] || !isemail.validate(this._envelope.to[i])) {
+            return callback(this._formatError('Invalid recipient ' + JSON.stringify(this._envelope.to[i]), 'EENVELOPE'));
+        }
     }
 
     // clone the recipients array for latter manipulation
@@ -564,16 +577,16 @@ SMTPConnection.prototype._setEnvelope = function(envelope, callback) {
     this._envelope.rejected = [];
     this._envelope.accepted = [];
 
-    this._currentAction = function(str) {
+    this._currentAction = function (str) {
         this._actionMAIL(str, callback);
     }.bind(this);
     this._sendCommand('MAIL FROM:<' + (this._envelope.from) + '>');
 };
 
-SMTPConnection.prototype._createSendStream = function(callback) {
+SMTPConnection.prototype._createSendStream = function (callback) {
     var dataStream = new DataStream();
 
-    this._currentAction = function(str) {
+    this._currentAction = function (str) {
         this._actionStream(str, callback);
     }.bind(this);
 
@@ -582,7 +595,7 @@ SMTPConnection.prototype._createSendStream = function(callback) {
     });
 
     if (this.options.debug) {
-        dataStream.on('data', function(chunk) {
+        dataStream.on('data', function (chunk) {
             this.emit('log', {
                 type: 'stream',
                 message: chunk.toString('binary').trim()
@@ -602,7 +615,7 @@ SMTPConnection.prototype._createSendStream = function(callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionGreeting = function(str) {
+SMTPConnection.prototype._actionGreeting = function (str) {
     clearTimeout(this._greetingTimeout);
 
     if (str.substr(0, 3) !== '220') {
@@ -625,7 +638,7 @@ SMTPConnection.prototype._actionGreeting = function(str) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionLHLO = function(str) {
+SMTPConnection.prototype._actionLHLO = function (str) {
     if (str.charAt(0) !== '2') {
         this._onError(new Error('Invalid response for LHLO:\n' + str), 'EPROTOCOL', str);
         return;
@@ -642,7 +655,7 @@ SMTPConnection.prototype._actionLHLO = function(str) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionEHLO = function(str) {
+SMTPConnection.prototype._actionEHLO = function (str) {
     if (str.substr(0, 3) === '421') {
         this._onError(new Error('Server terminates connection:\n' + str), 'ECONNECTION', str);
         return;
@@ -696,7 +709,7 @@ SMTPConnection.prototype._actionEHLO = function(str) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionHELO = function(str) {
+SMTPConnection.prototype._actionHELO = function (str) {
     if (str.charAt(0) !== '2') {
         this._onError(new Error('Invalid response for EHLO/HELO:\n' + str), 'EPROTOCOL', str);
         return;
@@ -712,13 +725,13 @@ SMTPConnection.prototype._actionHELO = function(str) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionSTARTTLS = function(str) {
+SMTPConnection.prototype._actionSTARTTLS = function (str) {
     if (str.charAt(0) !== '2') {
         this._onError(new Error('Error upgrading connection with STARTTLS', 'ETLS', str));
         return;
     }
 
-    this._upgradeConnection((function(err, secured) {
+    this._upgradeConnection((function (err, secured) {
         if (err) {
             this._onError(new Error('Error initiating TLS - ' + (err.message || err)), 'ETLS');
             return;
@@ -748,13 +761,13 @@ SMTPConnection.prototype._actionSTARTTLS = function(str) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionAUTH_LOGIN_USER = function(str, callback) {
+SMTPConnection.prototype._actionAUTH_LOGIN_USER = function (str, callback) {
     if (str !== '334 VXNlcm5hbWU6') {
         callback(this._formatError('Invalid login sequence while waiting for "334 VXNlcm5hbWU6"', 'EAUTH', str));
         return;
     }
 
-    this._currentAction = function(str) {
+    this._currentAction = function (str) {
         this._actionAUTH_LOGIN_PASS(str, callback);
     }.bind(this);
 
@@ -770,7 +783,7 @@ SMTPConnection.prototype._actionAUTH_LOGIN_USER = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionAUTH_CRAM_MD5 = function(str, callback) {
+SMTPConnection.prototype._actionAUTH_CRAM_MD5 = function (str, callback) {
     var challengeMatch = str.match(/^334\s+(.+)$/);
     var challengeString = '';
 
@@ -789,7 +802,7 @@ SMTPConnection.prototype._actionAUTH_CRAM_MD5 = function(str, callback) {
     var hex_hmac = hmac_md5.digest('hex'),
         prepended = this._auth.user + ' ' + hex_hmac;
 
-    this._currentAction = function(str) {
+    this._currentAction = function (str) {
         this._actionAUTH_CRAM_MD5_PASS(str, callback);
     }.bind(this);
 
@@ -804,7 +817,7 @@ SMTPConnection.prototype._actionAUTH_CRAM_MD5 = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionAUTH_CRAM_MD5_PASS = function(str, callback) {
+SMTPConnection.prototype._actionAUTH_CRAM_MD5_PASS = function (str, callback) {
     if (!str.match(/^235\s+/)) {
         return callback(this._formatError('Invalid login sequence while waiting for "235"', 'EAUTH', str));
     }
@@ -820,12 +833,12 @@ SMTPConnection.prototype._actionAUTH_CRAM_MD5_PASS = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionAUTH_LOGIN_PASS = function(str, callback) {
+SMTPConnection.prototype._actionAUTH_LOGIN_PASS = function (str, callback) {
     if (str !== '334 UGFzc3dvcmQ6') {
         return callback(this._formatError('Invalid login sequence while waiting for "334 UGFzc3dvcmQ6"', 'EAUTH', str));
     }
 
-    this._currentAction = function(str) {
+    this._currentAction = function (str) {
         this._actionAUTHComplete(str, callback);
     }.bind(this);
 
@@ -839,14 +852,14 @@ SMTPConnection.prototype._actionAUTH_LOGIN_PASS = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionAUTHComplete = function(str, isRetry, callback) {
+SMTPConnection.prototype._actionAUTHComplete = function (str, isRetry, callback) {
     if (!callback && typeof isRetry === 'function') {
         callback = isRetry;
         isRetry = undefined;
     }
 
     if (str.substr(0, 3) === '334') {
-        this._currentAction = function(str) {
+        this._currentAction = function (str) {
             if (isRetry || !this._auth.xoauth2 || typeof this._auth.xoauth2 !== 'object') {
                 this._actionAUTHComplete(str, true, callback);
             } else {
@@ -870,7 +883,7 @@ SMTPConnection.prototype._actionAUTHComplete = function(str, isRetry, callback) 
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionMAIL = function(str, callback) {
+SMTPConnection.prototype._actionMAIL = function (str, callback) {
     if (Number(str.charAt(0)) !== 2) {
         return callback(this._formatError('Mail command failed', 'EENVELOPE', str));
     }
@@ -879,7 +892,7 @@ SMTPConnection.prototype._actionMAIL = function(str, callback) {
         return callback(this._formatError('Can\'t send mail - no recipients defined', 'EENVELOPE'));
     } else {
         this._envelope.curRecipient = this._envelope.rcptQueue.shift();
-        this._currentAction = function(str) {
+        this._currentAction = function (str) {
             this._actionRCPT(str, callback);
         }.bind(this);
         this._sendCommand('RCPT TO:<' + this._envelope.curRecipient + '>');
@@ -891,7 +904,7 @@ SMTPConnection.prototype._actionMAIL = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionRCPT = function(str, callback) {
+SMTPConnection.prototype._actionRCPT = function (str, callback) {
     if (Number(str.charAt(0)) !== 2) {
         // this is a soft error
         this._envelope.rejected.push(this._envelope.curRecipient);
@@ -901,7 +914,7 @@ SMTPConnection.prototype._actionRCPT = function(str, callback) {
 
     if (!this._envelope.rcptQueue.length) {
         if (this._envelope.rejected.length < this._envelope.to.length) {
-            this._currentAction = function(str) {
+            this._currentAction = function (str) {
                 this._actionDATA(str, callback);
             }.bind(this);
             this._sendCommand('DATA');
@@ -910,7 +923,7 @@ SMTPConnection.prototype._actionRCPT = function(str, callback) {
         }
     } else {
         this._envelope.curRecipient = this._envelope.rcptQueue.shift();
-        this._currentAction = function(str) {
+        this._currentAction = function (str) {
             this._actionRCPT(str, callback);
         }.bind(this);
         this._sendCommand('RCPT TO:<' + this._envelope.curRecipient + '>');
@@ -922,7 +935,7 @@ SMTPConnection.prototype._actionRCPT = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionDATA = function(str, callback) {
+SMTPConnection.prototype._actionDATA = function (str, callback) {
     // response should be 354 but according to this issue https://github.com/eleith/emailjs/issues/24
     // some servers might use 250 instead, so lets check for 2 or 3 as the first digit
     if ([2, 3].indexOf(Number(str.charAt(0))) < 0) {
@@ -940,23 +953,23 @@ SMTPConnection.prototype._actionDATA = function(str, callback) {
  *
  * @param {String} str Message from the server
  */
-SMTPConnection.prototype._actionStream = function(str, callback) {
+SMTPConnection.prototype._actionStream = function (str, callback) {
     if (Number(str.charAt(0)) !== 2) {
         // Message failed
         return callback(this._formatError('Message failed', 'EMESSAGE', str));
     } else {
         // Message sent succesfully
-        callback(null, str);
+        return callback(null, str);
     }
 };
 
-SMTPConnection.prototype._handleXOauth2Token = function(isRetry, callback) {
-    this._currentAction = function(str) {
+SMTPConnection.prototype._handleXOauth2Token = function (isRetry, callback) {
+    this._currentAction = function (str) {
         this._actionAUTHComplete(str, isRetry, callback);
     }.bind(this);
 
     if (this._auth.xoauth2 && typeof this._auth.xoauth2 === 'object') {
-        this._auth.xoauth2[isRetry ? 'generateToken' : 'getToken'](function(err, token) {
+        this._auth.xoauth2[isRetry ? 'generateToken' : 'getToken'](function (err, token) {
             if (err) {
                 return callback(this._formatError(err, 'EAUTH'));
             }
@@ -974,7 +987,7 @@ SMTPConnection.prototype._handleXOauth2Token = function(isRetry, callback) {
  * @param {String} token Valid access token for the user
  * @return {String} Base64 formatted login token
  */
-SMTPConnection.prototype._buildXOAuth2Token = function(user, token) {
+SMTPConnection.prototype._buildXOAuth2Token = function (user, token) {
     var authData = [
         'user=' + (user || ''),
         'auth=Bearer ' + token,
@@ -984,7 +997,7 @@ SMTPConnection.prototype._buildXOAuth2Token = function(user, token) {
     return new Buffer(authData.join('\x01')).toString('base64');
 };
 
-SMTPConnection.prototype._getHostname = function() {
+SMTPConnection.prototype._getHostname = function () {
     // defaul hostname is machine hostname or [IP]
     var defaultHostname = os.hostname() || '';
 

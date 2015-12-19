@@ -446,6 +446,16 @@ describe('Login tests', function () {
             });
         });
 
+        it('should return error for invalidly formatted recipients', function (done) {
+            client.send({
+                from: 'test@valid.sender',
+                to: ['test@valid.recipient', 'gets@ignored.none>\r\nRCPT TO:<target@somewhere.none>\r\nDATA Subject: Subject\r\nCthulhu fhtagn\r\n.\r\n']
+            }, 'test', function (err) {
+                expect(/^Invalid recipient/.test(err.message)).to.be.true;
+                done();
+            });
+        });
+
         it('should return error for no valid recipients', function (done) {
             client.send({
                 from: 'test@valid.sender',
