@@ -451,7 +451,12 @@ SMTPConnection.prototype._destroy = function () {
  *        has been secured
  */
 SMTPConnection.prototype._upgradeConnection = function (callback) {
-    this._socket.removeAllListeners();
+    // do not remove all listeners or it breaks node v0.10 as there's
+    // apparently a 'finish' event set that would be cleared as well
+
+    // we can safely keep 'error', 'end', 'close' etc. events
+    this._socket.removeAllListeners('data'); // incoming data is going to be gibberish from this point onwards
+    this._socket.removeAllListeners('timeout'); // timeout will be re-set for the new socket object
 
     var opts = {
         socket: this._socket,
