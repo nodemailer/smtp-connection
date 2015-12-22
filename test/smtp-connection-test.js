@@ -449,7 +449,7 @@ describe('Login tests', function () {
         it('should return error for invalidly formatted recipients', function (done) {
             client.send({
                 from: 'test@valid.sender',
-                to: ['test@valid.recipient', 'gets@ignored.none>\r\nRCPT TO:<target@somewhere.none>\r\nDATA Subject: Subject\r\nCthulhu fhtagn\r\n.\r\n']
+                to: ['test@valid.recipient', '"address\r\n with folding"@valid.recipient']
             }, 'test', function (err) {
                 expect(/^Invalid recipient/.test(err.message)).to.be.true;
                 done();
