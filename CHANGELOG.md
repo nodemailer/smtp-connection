@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.7 2015-12-22
+
+  * Fixed an issue with Node v0.10 where too many events were cleared
+
 ## v1.3.6 2015-12-19
 
   * Updated isemail configuration to only allow SMTP compatible e-mail addresses for the envelope (otherwise valid addresses might include symbols that don't play well with SMTP, eg. line folding inside quoted strings)
