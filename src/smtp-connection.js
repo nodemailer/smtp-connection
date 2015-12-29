@@ -8,7 +8,6 @@ var tls = require('tls');
 var os = require('os');
 var crypto = require('crypto');
 var DataStream = require('./data-stream');
-var isemail = require('isemail');
 
 module.exports = SMTPConnection;
 
@@ -567,22 +566,12 @@ SMTPConnection.prototype._setEnvelope = function (envelope, callback) {
         return callback(this._formatError('No recipients defined', 'EENVELOPE'));
     }
 
-    if (this._envelope.from &&
-        isemail(this._envelope.from,
-            // isemail non smtp compatible error codes start from 17
-            {
-                errorLevel: 16
-            }) !== 0) {
+    if (this._envelope.from && /[\r\n<>]/.test(this._envelope.from)) {
         return callback(this._formatError('Invalid sender ' + JSON.stringify(this._envelope.from), 'EENVELOPE'));
     }
 
     for (var i = 0, len = this._envelope.to.length; i < len; i++) {
-        if (!this._envelope.to[i] ||
-            isemail(this._envelope.to[i],
-                // isemail non smtp compatible error codes start from 17
-                {
-                    errorLevel: 16
-                }) !== 0) {
+        if (!this._envelope.to[i] || /[\r\n<>]/.test(this._envelope.to[i])) {
             return callback(this._formatError('Invalid recipient ' + JSON.stringify(this._envelope.to[i]), 'EENVELOPE'));
         }
     }
@@ -881,7 +870,7 @@ SMTPConnection.prototype._actionAUTHComplete = function (str, isRetry, callback)
                 setTimeout(this._handleXOauth2Token.bind(this, true, callback), Math.random() * 4000 + 1000);
             }
         }.bind(this);
-        this._sendCommand(new Buffer(0));
+        this._sendCommand('');
         return;
     }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.8 2015-12-29
+
+  * Do not use strict isEmail function, just check that there are no newlines in addresses. Fixes a regression with lax e-mail addresses.
+
 ## v1.3.7 2015-12-22
 
   * Fixed an issue with Node v0.10 where too many events were cleared
