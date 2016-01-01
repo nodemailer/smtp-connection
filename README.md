@@ -36,7 +36,7 @@ Where
     * **options.connectionTimeout** how many milliseconds to wait for the connection to establish
     * **options.greetingTimeout** how many milliseconds to wait for the greeting after connection is established
     * **options.socketTimeout** how many milliseconds of inactivity to allow
-    * **options.debug** if true, the connection emits all traffic between client and server as 'log' events
+    * **options.logger** optional [bunyan](https://github.com/trentm/node-bunyan) compatible logger instance. By default logs to console. If set to `false` then nothing is logged
     * **options.lmtp** if true, uses LMTP instead of SMTP to talk to the server. Partial support, does not work well with multiple recipients
     * **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
     * **options.tls** defines additional options to be passed to the socket constructor, e.g. *{rejectUnauthorized: true}*
@@ -49,7 +49,6 @@ SMTPConnection instances are event emitters with the following events
   * **'error'** *(err)* emitted when an error occurs. Connection is closed automatically in this case.
   * **'connect'** emitted when the connection is established
   * **'end'** when the instance is destroyed
-  * **'log'** *(data)* emitted for all traffic when debug option is set to true
 
 ### connect
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.0 2016-01-01
+
+  * Replaced jshint with eslint
+  * Handle message stream errors
+  * Use bunyan compatible logger interface instead of emitting 'log' events
+
 ## v1.3.8 2015-12-29
 
   * Do not use strict isEmail function, just check that there are no newlines in addresses. Fixes a regression with lax e-mail addresses.
