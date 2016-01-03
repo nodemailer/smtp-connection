@@ -266,7 +266,7 @@ describe('Login tests', function () {
 
         client = new SMTPConnection({
             port: PORT_NUMBER,
-            logger: false
+            loggers: false
         });
 
         server.listen(PORT_NUMBER, function () {

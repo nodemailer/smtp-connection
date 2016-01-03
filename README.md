@@ -37,6 +37,7 @@ Where
     * **options.greetingTimeout** how many milliseconds to wait for the greeting after connection is established
     * **options.socketTimeout** how many milliseconds of inactivity to allow
     * **options.logger** optional [bunyan](https://github.com/trentm/node-bunyan) compatible logger instance. By default logs to console. If set to `false` then nothing is logged
+    * **options.debug** if set to true, then log SMTP traffic, otherwise log only transaction events
     * **options.lmtp** if true, uses LMTP instead of SMTP to talk to the server. Partial support, does not work well with multiple recipients
     * **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
     * **options.tls** defines additional options to be passed to the socket constructor, e.g. *{rejectUnauthorized: true}*
