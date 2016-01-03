@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.0-beta.3 2016-01-03
+
+  * Use shared function to create the logger instance
+
 ## v2.0.0-beta.2 2016-01-03
 
   * Updated logging. Log information about transmitted message size in bytes
