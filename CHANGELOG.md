@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.0 2016-01-04
+
+  * Locked dependency version
+
 ## v2.0.0-beta.5 2016-01-03
 
   * Fixed a bug where errors might been thrown before a handler was set
