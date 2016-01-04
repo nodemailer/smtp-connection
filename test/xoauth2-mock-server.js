@@ -4,7 +4,7 @@ var http = require('http');
 var crypto = require('crypto');
 var querystring = require('querystring');
 
-module.exports = function(options) {
+module.exports = function (options) {
     return new OAuthServer(options);
 };
 
@@ -17,7 +17,7 @@ function OAuthServer(options) {
     this.options.expiresIn = Number(this.options.expiresIn) || 3600;
 }
 
-OAuthServer.prototype.addUser = function(username, refreshToken) {
+OAuthServer.prototype.addUser = function (username, refreshToken) {
     var user = {
         username: username,
         refreshToken: refreshToken || crypto.randomBytes(10).toString('base64')
@@ -29,7 +29,7 @@ OAuthServer.prototype.addUser = function(username, refreshToken) {
     return this.generateAccessToken(user.refreshToken);
 };
 
-OAuthServer.prototype.generateAccessToken = function(refreshToken) {
+OAuthServer.prototype.generateAccessToken = function (refreshToken) {
     var username = this.tokens[refreshToken],
         accessToken = crypto.randomBytes(10).toString('base64');
 
@@ -53,7 +53,7 @@ OAuthServer.prototype.generateAccessToken = function(refreshToken) {
     };
 };
 
-OAuthServer.prototype.validateAccessToken = function(username, accessToken) {
+OAuthServer.prototype.validateAccessToken = function (username, accessToken) {
     if (!this.users[username] ||
         this.users[username].accessToken !== accessToken ||
         this.users[username].expiresIn < Date.now()) {
@@ -64,11 +64,11 @@ OAuthServer.prototype.validateAccessToken = function(username, accessToken) {
     }
 };
 
-OAuthServer.prototype.start = function(callback) {
-    this.server = http.createServer((function(req, res) {
+OAuthServer.prototype.start = function (callback) {
+    this.server = http.createServer((function (req, res) {
         var data = [],
             datalen = 0;
-        req.on('data', function(chunk) {
+        req.on('data', function (chunk) {
             if (!chunk || !chunk.length) {
                 return;
             }
@@ -76,7 +76,7 @@ OAuthServer.prototype.start = function(callback) {
             data.push(chunk);
             datalen += chunk.length;
         });
-        req.on('end', (function() {
+        req.on('end', (function () {
             var query = querystring.parse(Buffer.concat(data, datalen).toString()),
                 response = this.generateAccessToken(query.refresh_token);
 
@@ -91,6 +91,6 @@ OAuthServer.prototype.start = function(callback) {
     this.server.listen(this.options.port, callback);
 };
 
-OAuthServer.prototype.stop = function(callback) {
+OAuthServer.prototype.stop = function (callback) {
     this.server.close(callback);
 };

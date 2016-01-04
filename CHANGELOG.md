@@ -1,5 +1,32 @@
 # Changelog
 
+## v2.0.0 2016-01-04
+
+  * Locked dependency version
+
+## v2.0.0-beta.5 2016-01-03
+
+  * Fixed a bug where errors might been thrown before a handler was set
+
+## v2.0.0-beta.3 2016-01-03
+
+  * Use shared function to create the logger instance
+
+## v2.0.0-beta.2 2016-01-03
+
+  * Updated logging. Log information about transmitted message size in bytes
+
+## v2.0.0-beta.1 2016-01-03
+
+  * Re-added `debug` option. If set to true, then logs SMTP traffic, otherwise only transaction events
+  * Pass streamed message content to the logger
+
+## v2.0.0-beta.0 2016-01-02
+
+  * Replaced jshint with eslint
+  * Handle message stream errors
+  * Use bunyan compatible logger interface instead of emitting 'log' events
+
 ## v1.3.8 2015-12-29
 
   * Do not use strict isEmail function, just check that there are no newlines in addresses. Fixes a regression with lax e-mail addresses.

@@ -1,3 +1,6 @@
+/* eslint no-unused-expressions:0, no-invalid-this:0 */
+/* globals afterEach, beforeEach, describe, it */
+
 'use strict';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -5,7 +8,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 var fs = require('fs');
 var chai = require('chai');
 var expect = chai.expect;
-var SMTPConnection = require('../src/smtp-connection');
+var SMTPConnection = require('../lib/smtp-connection');
 var packageData = require('../package.json');
 var SMTPServer = require('smtp-server').SMTPServer;
 var net = require('net');
@@ -81,7 +84,8 @@ describe('Connection tests', function () {
     it('should connect to unsecure server', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 3,
-            ignoreTLS: true
+            ignoreTLS: true,
+            logger: false
         });
 
         client.connect(function () {
@@ -98,7 +102,8 @@ describe('Connection tests', function () {
 
     it('should connect to a server and upgrade with STARTTLS', function (done) {
         var client = new SMTPConnection({
-            port: PORT_NUMBER
+            port: PORT_NUMBER,
+            logger: false
         });
 
         client.connect(function () {
@@ -116,7 +121,8 @@ describe('Connection tests', function () {
     it('should try upgrade with STARTTLS where not advertised', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 3,
-            requireTLS: true
+            requireTLS: true,
+            logger: false
         });
 
         client.connect(function () {
@@ -134,7 +140,8 @@ describe('Connection tests', function () {
 
     it('should receive end after STARTTLS', function (done) {
         var client = new SMTPConnection({
-            port: PORT_NUMBER
+            port: PORT_NUMBER,
+            logger: false
         });
 
         client.connect(function () {
@@ -155,7 +162,8 @@ describe('Connection tests', function () {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 2,
             ignoreTLS: true,
-            secure: true
+            secure: true,
+            logger: false
         });
 
         client.connect(function () {
@@ -172,7 +180,8 @@ describe('Connection tests', function () {
 
     it('should emit error for invalid port', function (done) {
         var client = new SMTPConnection({
-            port: PORT_NUMBER + 10
+            port: PORT_NUMBER + 10,
+            logger: false
         });
 
         client.connect(function () {
@@ -191,7 +200,8 @@ describe('Connection tests', function () {
     it('should emit inactivity timeout error', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER,
-            socketTimeout: 100
+            socketTimeout: 100,
+            logger: false
         });
 
         client.connect(function () {
@@ -226,16 +236,14 @@ describe('Login tests', function () {
                     if (auth.username !== 'testuser' || auth.password !== 'testpass') {
                         return callback(new Error('Invalid username or password'));
                     }
-                } else {
-                    if (auth.username !== 'testuser' || auth.accessToken !== testtoken) {
-                        return callback(null, {
-                            data: {
-                                status: '401',
-                                schemes: 'bearer mac',
-                                scope: 'my_smtp_access_scope_name'
-                            }
-                        });
-                    }
+                } else if (auth.username !== 'testuser' || auth.accessToken !== testtoken) {
+                    return callback(null, {
+                        data: {
+                            status: '401',
+                            schemes: 'bearer mac',
+                            scope: 'my_smtp_access_scope_name'
+                        }
+                    });
                 }
                 callback(null, {
                     user: 123
@@ -257,7 +265,8 @@ describe('Login tests', function () {
         });
 
         client = new SMTPConnection({
-            port: PORT_NUMBER
+            port: PORT_NUMBER,
+            logger: false
         });
 
         server.listen(PORT_NUMBER, function () {
