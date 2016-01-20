@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.1 2016-01-04
+
+  * Bumped nodemailer-shared
+
 ## v2.0.0 2016-01-04
 
   * Locked dependency version

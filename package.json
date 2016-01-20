@@ -1,6 +1,6 @@
 {
   "name": "smtp-connection",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Connect to SMTP servers",
   "main": "lib/smtp-connection.js",
   "directories": {
@@ -33,6 +33,6 @@
     "xoauth2": "^1.1.0"
   },
   "dependencies": {
-    "nodemailer-shared": "1.0.2"
+    "nodemailer-shared": "1.0.3"
   }
 }
