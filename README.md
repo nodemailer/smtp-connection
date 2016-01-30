@@ -41,7 +41,8 @@ Where
     * **options.lmtp** if true, uses LMTP instead of SMTP to talk to the server. Partial support, does not work well with multiple recipients
     * **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
     * **options.tls** defines additional options to be passed to the socket constructor, e.g. *{rejectUnauthorized: true}*
-    * **options.socket** - existing socket to use instead of creating a new one
+    * **options.socket** - initialized socket to use instead of creating a new one
+    * **options.connection** - connected socket to use instead of creating and connecting a new one. If `secure` option is true, then socket is upgraded from plaintext to ciphertext
 
 ### Events
 

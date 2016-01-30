@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.0 2016-01-30
+
+  * Added new option `connection` to provide an already connected plaintext socket. Useful when behind proxy.
+
 ## v2.0.1 2016-01-04
 
   * Bumped nodemailer-shared

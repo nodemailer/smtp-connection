@@ -11,6 +11,7 @@ var expect = chai.expect;
 var SMTPConnection = require('../lib/smtp-connection');
 var packageData = require('../package.json');
 var SMTPServer = require('smtp-server').SMTPServer;
+var HttpConnectProxy = require('proxy-test-server');
 var net = require('net');
 var xoauth2Server = require('./xoauth2-mock-server');
 var xoauth2 = require('xoauth2');
@@ -19,6 +20,7 @@ var sinon = require('sinon');
 chai.config.includeStack = true;
 
 var PORT_NUMBER = 8397;
+var PROXY_PORT_NUMBER = 9999;
 var XOAUTH_PORT = 8497;
 
 describe('Version test', function () {
@@ -29,7 +31,7 @@ describe('Version test', function () {
 });
 
 describe('Connection tests', function () {
-    var server, insecureServer, invalidServer, secureServer;
+    var server, insecureServer, invalidServer, secureServer, httpProxy;
 
     beforeEach(function (done) {
         server = new SMTPServer({
@@ -62,10 +64,14 @@ describe('Connection tests', function () {
             logger: false
         });
 
+        httpProxy = new HttpConnectProxy();
+
         server.listen(PORT_NUMBER, function () {
             invalidServer.listen(PORT_NUMBER + 1, function () {
                 secureServer.listen(PORT_NUMBER + 2, function () {
-                    insecureServer.listen(PORT_NUMBER + 3, done);
+                    insecureServer.listen(PORT_NUMBER + 3, function () {
+                        httpProxy.listen(PROXY_PORT_NUMBER, done);
+                    });
                 });
             });
         });
@@ -75,7 +81,9 @@ describe('Connection tests', function () {
         server.close(function () {
             invalidServer.close(function () {
                 secureServer.close(function () {
-                    insecureServer.close(done);
+                    insecureServer.close(function () {
+                        httpProxy.close(done);
+                    });
                 });
             });
         });
@@ -161,7 +169,6 @@ describe('Connection tests', function () {
     it('should connect to a secure server', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 2,
-            ignoreTLS: true,
             secure: true,
             logger: false
         });
@@ -213,6 +220,59 @@ describe('Connection tests', function () {
         });
 
         client.on('end', done);
+    });
+
+    it('should connect through proxy', function (done) {
+        var runTest = function (socket) {
+            var client = new SMTPConnection({
+                logger: false,
+                port: PORT_NUMBER,
+                connection: socket
+            });
+
+            client.connect(function () {
+                expect(client.secure).to.be.true;
+                client.close();
+            });
+
+            client.on('error', function (err) {
+                expect(err).to.not.exist;
+            });
+
+            client.on('end', done);
+        };
+
+        proxyConnect(PROXY_PORT_NUMBER, '127.0.0.1', PORT_NUMBER, '127.0.0.1', function (err, socket) {
+            expect(err).to.not.exist;
+            runTest(socket);
+        });
+    });
+
+    it('should connect through proxy to secure server', function (done) {
+        var runTest = function (socket) {
+            var client = new SMTPConnection({
+                logger: false,
+                port: PORT_NUMBER + 2,
+                secure: true,
+                connection: socket
+            });
+
+            client.connect(function () {
+                expect(client.secure).to.be.true;
+                client.close();
+            });
+
+            client.on('error', function (err) {
+                expect(err).to.not.exist;
+            });
+
+            client.on('end', done);
+        };
+
+        proxyConnect(PROXY_PORT_NUMBER, '127.0.0.1', PORT_NUMBER + 2, '127.0.0.1', function (err, socket) {
+            expect(err).to.not.exist;
+            runTest(socket);
+        });
     });
 });
 
@@ -559,3 +619,33 @@ describe('Login tests', function () {
         });
     });
 });
+
+
+function proxyConnect(port, host, destinationPort, destinationHost, callback) {
+    var socket = net.connect(port, host, function () {
+        socket.write('CONNECT ' + destinationHost + ':' + destinationPort + ' HTTP/1.1\r\n\r\n');
+
+        var headers = '';
+        var onSocketData = function (chunk) {
+            var match;
+            var remainder;
+
+            headers += chunk.toString('binary');
+            if ((match = headers.match(/\r\n\r\n/))) {
+                socket.removeListener('data', onSocketData);
+                remainder = headers.substr(match.index + match[0].length);
+                headers = headers.substr(0, match.index);
+                if (remainder) {
+                    socket.unshift(new Buffer(remainder, 'binary'));
+                }
+                // proxy connection is now established
+                return callback(null, socket);
+            }
+        };
+        socket.on('data', onSocketData);
+    });
+
+    socket.on('error', function (err) {
+        expect(err).to.not.exist;
+    });
+}
