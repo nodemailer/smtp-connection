@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.0 2016-01-30
+
+  * Added new option `secured` to indicate if socket provided by `connection` is already upgraded or not
+
 ## v2.1.0 2016-01-30
 
   * Added new option `connection` to provide an already connected plaintext socket. Useful when behind proxy.
