@@ -1,6 +1,10 @@
 # Changelog
 
-## v2.2.0 2016-01-30
+## v2.2.1 2016-02-09
+
+  * Make sure socket is resumed once 'data' handler is set
+
+## v2.2.0 2016-02-08
 
   * Added new option `secured` to indicate if socket provided by `connection` is already upgraded or not
 
