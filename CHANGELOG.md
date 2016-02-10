@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.2 2016-02-09
+
+  * Bumped nodemailer-shared
+
 ## v2.2.1 2016-02-09
 
   * Make sure socket is resumed once 'data' handler is set
