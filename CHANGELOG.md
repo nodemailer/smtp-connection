@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.4 2016-02-11
+
+  * Catch errors that happen while creating a socket
+
 ## v2.2.3 2016-02-11
 
   * Fixed error code for STARTTLS errors

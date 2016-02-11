@@ -204,6 +204,25 @@ describe('Connection tests', function () {
         client.on('end', done);
     });
 
+    it('should emit error for too large port', function (done) {
+        var client = new SMTPConnection({
+            port: 999999999,
+            logger: false
+        });
+
+        client.connect(function () {
+            // should not run
+            expect(false).to.be.true;
+            client.close();
+        });
+
+        client.once('error', function (err) {
+            expect(err).to.exist;
+        });
+
+        client.on('end', done);
+    });
+
     it('should emit inactivity timeout error', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER,
