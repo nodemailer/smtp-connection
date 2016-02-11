@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.3 2016-02-11
+
+  * Fixed error code for STARTTLS errors
+
 ## v2.2.2 2016-02-09
 
   * Bumped nodemailer-shared
