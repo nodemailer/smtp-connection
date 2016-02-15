@@ -35,7 +35,14 @@ describe('Connection tests', function () {
 
     beforeEach(function (done) {
         server = new SMTPServer({
-            disabledCommands: ['AUTH'],
+            onAuth: function (auth, session, callback) {
+                if (auth.username !== 'testuser' || auth.password !== 'testpass') {
+                    return callback(new Error('Invalid username or password'));
+                }
+                callback(null, {
+                    user: 123
+                });
+            },
             onData: function (stream, session, callback) {
                 stream.on('data', function () {});
                 stream.on('end', callback);
@@ -56,7 +63,14 @@ describe('Connection tests', function () {
 
         secureServer = new SMTPServer({
             secure: true,
-            disabledCommands: ['AUTH'],
+            onAuth: function (auth, session, callback) {
+                if (auth.username !== 'testuser' || auth.password !== 'testpass') {
+                    return callback(new Error('Invalid username or password'));
+                }
+                callback(null, {
+                    user: 123
+                });
+            },
             onData: function (stream, session, callback) {
                 stream.on('data', function () {});
                 stream.on('end', callback);
@@ -251,7 +265,14 @@ describe('Connection tests', function () {
 
             client.connect(function () {
                 expect(client.secure).to.be.true;
-                client.close();
+                client.login({
+                    user: 'testuser',
+                    pass: 'testpass'
+                }, function (err) {
+                    expect(err).to.not.exist;
+                    expect(client.authenticated).to.be.true;
+                    client.close();
+                });
             });
 
             client.on('error', function (err) {
@@ -278,7 +299,14 @@ describe('Connection tests', function () {
 
             client.connect(function () {
                 expect(client.secure).to.be.true;
-                client.close();
+                client.login({
+                    user: 'testuser',
+                    pass: 'testpass'
+                }, function (err) {
+                    expect(err).to.not.exist;
+                    expect(client.authenticated).to.be.true;
+                    client.close();
+                });
             });
 
             client.on('error', function (err) {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.5 2016-02-11
+
+  * Fixed an issue with proxied sockets and TLS
+
 ## v2.2.4 2016-02-11
 
   * Catch errors that happen while creating a socket
