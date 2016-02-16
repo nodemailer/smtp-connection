@@ -1,6 +1,10 @@
 # Changelog
 
-## v2.2.5 2016-02-11
+## v2.2.6 2016-02-16
+
+  * Added yet another socket.resume to fixed an issue with proxied sockets and TLS
+
+## v2.2.5 2016-02-15
 
   * Fixed an issue with proxied sockets and TLS
 
