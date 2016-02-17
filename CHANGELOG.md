@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.0 2016-02-17
+
+  * Do not modify provided options object
+
 ## v2.2.6 2016-02-16
 
   * Added yet another socket.resume to fixed an issue with proxied sockets and TLS
