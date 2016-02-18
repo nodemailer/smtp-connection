@@ -4,7 +4,7 @@ SMTP client module. Connect to SMTP servers and send mail with it.
 
 This module is the successor for the client part of the (now deprecated) SMTP module [simplesmtp](https://www.npmjs.com/package/simplesmtp). For matching SMTP server see [smtp-server](https://www.npmjs.com/package/smtp-server).
 
-[![Build Status](https://secure.travis-ci.org/andris9/smtp-connection.svg)](http://travis-ci.org/andris9/Nodemailer)
+[![Build Status](https://secure.travis-ci.org/nodemailer/smtp-connection.svg)](http://travis-ci.org/nodemailer/smtp-connection)
 [![npm version](https://badge.fury.io/js/smtp-connection.svg)](http://badge.fury.io/js/smtp-connection)
 
 ## Usage
