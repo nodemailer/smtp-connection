@@ -140,6 +140,25 @@ describe('Connection tests', function () {
         client.on('end', done);
     });
 
+    it('should connect to a server and upgrade with forced STARTTLS', function (done) {
+        var client = new SMTPConnection({
+            port: PORT_NUMBER,
+            logger: false,
+            requireTLS: true
+        });
+
+        client.connect(function () {
+            expect(client.secure).to.be.true;
+            client.close();
+        });
+
+        client.on('error', function (err) {
+            expect(err).to.not.exist;
+        });
+
+        client.on('end', done);
+    });
+
     it('should try upgrade with STARTTLS where not advertised', function (done) {
         var client = new SMTPConnection({
             port: PORT_NUMBER + 3,

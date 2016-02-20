@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.1 2016-02-20
+
+  * Fix broken requireTLS option
+
 ## v2.3.0 2016-02-17
 
   * Do not modify provided options object
