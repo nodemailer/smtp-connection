@@ -269,6 +269,7 @@ describe('Connection tests', function () {
 
         client.once('error', function (err) {
             expect(err).to.exist;
+            expect(err.code).to.equal('ETIMEDOUT');
         });
 
         client.on('end', done);
