@@ -380,11 +380,23 @@ describe('Login tests', function () {
                 if (!/@valid.sender/.test(address.address)) {
                     return callback(new Error('Only user@valid.sender is allowed to send mail'));
                 }
+
+                if (address.args.SMTPUTF8) {
+                    session.smtpUtf8 = true;
+                }
+
+                if (/[\x80-\uFFFF]/.test(address.address) && !session.smtpUtf8) {
+                    return callback(new Error('Trying to use Unicode address without declaring SMTPUTF8 first'));
+                }
+
                 return callback(); // Accept the address
             },
             onRcptTo: function (address, session, callback) {
                 if (!/@valid.recipient/.test(address.address)) {
                     return callback(new Error('Only user@valid.recipient is allowed to receive mail'));
+                }
+                if (/[\x80-\uFFFF]/.test(address.address) && !session.smtpUtf8) {
+                    return callback(new Error('Trying to use Unicode address without declaring SMTPUTF8 first'));
                 }
                 return callback(); // Accept the address
             },
@@ -575,6 +587,21 @@ describe('Login tests', function () {
                 expect(err).to.not.exist;
                 expect(info).to.deep.equal({
                     accepted: ['test1@valid.recipient', 'test3@valid.recipient'],
+                    rejected: ['test2@invalid.recipient'],
+                    response: '250 OK: message queued'
+                });
+                done();
+            });
+        });
+
+        it('should send using SMTPUTF8', function (done) {
+            client.send({
+                from: 'test@valid.sender',
+                to: ['test1@valid.recipient', 'test2@invalid.recipient', 'test3õ@valid.recipient']
+            }, 'test', function (err, info) {
+                expect(err).to.not.exist;
+                expect(info).to.deep.equal({
+                    accepted: ['test1@valid.recipient', 'test3õ@valid.recipient'],
                     rejected: ['test2@invalid.recipient'],
                     response: '250 OK: message queued'
                 });

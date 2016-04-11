@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.2 2016-04-11
+
+  * Declare SMTPUTF8 usage if an address includes Unicode characters and the server indicates support for it. Fixes an issue with internationalized email addresses that were rejected by Gmail
+
 ## v2.3.1 2016-02-20
 
   * Fix broken requireTLS option
