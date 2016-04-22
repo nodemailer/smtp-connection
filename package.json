@@ -34,6 +34,7 @@
     "xoauth2": "^1.1.0"
   },
   "dependencies": {
+    "httpntlm": "^1.5.3",
     "nodemailer-shared": "1.0.4"
   }
 }
