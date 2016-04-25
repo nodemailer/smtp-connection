@@ -109,6 +109,22 @@ connection.login({
 }, callback);
 ```
 
+### Login using NTLM
+
+`smtp-connection` has experimental support for NTLM authentication. You can try it out like this:
+
+```javascript
+connection.login({
+    domain: 'windows-domain',
+    workstation: 'windows-workstation',
+    user: 'user@somedomain.com',
+    pass: 'pass'
+}, callback);
+```
+
+I do not have access to an actual server that supports NTLM authentication
+so this feature is untested and should be used carefully.
+
 ### send
 
 Once the connection is authenticated (or just after connection is established if authentication is not required), you can send mail with
