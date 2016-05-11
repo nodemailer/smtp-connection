@@ -1,6 +1,10 @@
 # Changelog
 
-## v2.4.0-beta 2016-04-24
+## v2.5.0 2016-05-11
+
+  * Bumped dependencies
+
+## v2.4.0 2016-04-24
 
   * Added experimental support for NTLM authentication
 
