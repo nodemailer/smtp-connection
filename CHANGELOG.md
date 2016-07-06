@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.7.0 2016-07-06
+
+  * Use PIPELINING for multiple RCPT TO if available
+
 ## v2.6.0 2016-07-06
 
   * Added support for DSN

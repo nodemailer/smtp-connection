@@ -421,7 +421,8 @@ describe('Login tests', function () {
 
         client = new SMTPConnection({
             port: PORT_NUMBER,
-            logger: false
+            logger: false,
+            debug: false
         });
 
         server.listen(PORT_NUMBER, function () {
@@ -567,6 +568,49 @@ describe('Login tests', function () {
             });
         });
 
+    });
+
+    describe('Send without PIPELINING', function () {
+        beforeEach(function (done) {
+            client.on('end', function () {
+                client = new SMTPConnection({
+                    port: PORT_NUMBER,
+                    logger: false,
+                    debug: false
+                });
+                // disable PIPELINING
+                server.options.hidePIPELINING = true;
+                client.connect(function () {
+                    client.login({
+                        user: 'testuser',
+                        pass: 'testpass'
+                    }, function (err) {
+                        expect(err).to.not.exist;
+                        // enable PIPELINING
+                        server.options.hidePIPELINING = false;
+                        done();
+                    });
+                });
+            });
+            client.close();
+        });
+
+        it('should send only to valid recipients without PIPELINING', function (done) {
+            client.send({
+                from: 'test@valid.sender',
+                to: ['test1@valid.recipient', 'test2@invalid.recipient', 'test3@valid.recipient']
+            }, 'test', function (err, info) {
+                expect(err).to.not.exist;
+                expect(info).to.deep.equal({
+                    accepted: ['test1@valid.recipient', 'test3@valid.recipient'],
+                    rejected: ['test2@invalid.recipient'],
+                    rejectedErrors: info.rejectedErrors,
+                    response: '250 OK: message queued'
+                });
+                expect(info.rejectedErrors.length).to.equal(1);
+                done();
+            });
+        });
     });
 
     describe('Send messages', function () {
