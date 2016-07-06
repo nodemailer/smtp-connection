@@ -1,6 +1,6 @@
 {
   "name": "smtp-connection",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Connect to SMTP servers",
   "main": "lib/smtp-connection.js",
   "directories": {
@@ -26,9 +26,9 @@
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
-    "grunt-eslint": "^18.1.0",
+    "grunt-eslint": "^19.0.0",
     "grunt-mocha-test": "^0.12.7",
-    "mocha": "^2.4.5",
+    "mocha": "^2.5.3",
     "proxy-test-server": "^1.0.0",
     "sinon": "^1.17.4",
     "smtp-server": "^1.9.1",

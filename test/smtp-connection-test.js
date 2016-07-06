@@ -354,8 +354,20 @@ describe('Login tests', function () {
             disabledCommands: ['STARTTLS'],
 
             onData: function (stream, session, callback) {
-                stream.on('data', function () {});
-                stream.on('end', callback);
+                var err = false;
+                stream.on('data', function (chunk) {
+                    if (err || session.use8BitMime) {
+                        return;
+                    }
+                    for (var i = 0, len = chunk.length; i < len; i++) {
+                        if (chunk[i] >= 0x80) {
+                            err = new Error('8 bit content not allowed');
+                        }
+                    }
+                });
+                stream.on('end', function () {
+                    callback(err, false);
+                });
             },
 
             onAuth: function (auth, session, callback) {
@@ -383,6 +395,10 @@ describe('Login tests', function () {
 
                 if (address.args.SMTPUTF8) {
                     session.smtpUtf8 = true;
+                }
+
+                if (address.args.BODY === '8BITMIME') {
+                    session.use8BitMime = true;
                 }
 
                 if (/[\x80-\uFFFF]/.test(address.address) && !session.smtpUtf8) {
@@ -588,8 +604,10 @@ describe('Login tests', function () {
                 expect(info).to.deep.equal({
                     accepted: ['test1@valid.recipient', 'test3@valid.recipient'],
                     rejected: ['test2@invalid.recipient'],
+                    rejectedErrors: info.rejectedErrors,
                     response: '250 OK: message queued'
                 });
+                expect(info.rejectedErrors.length).to.equal(1);
                 done();
             });
         });
@@ -603,8 +621,37 @@ describe('Login tests', function () {
                 expect(info).to.deep.equal({
                     accepted: ['test1@valid.recipient', 'test3õ@valid.recipient'],
                     rejected: ['test2@invalid.recipient'],
+                    rejectedErrors: info.rejectedErrors,
                     response: '250 OK: message queued'
                 });
+                done();
+            });
+        });
+
+        it('should send using 8BITMIME', function (done) {
+            client.send({
+                use8BitMime: true,
+                from: 'test@valid.sender',
+                to: ['test1@valid.recipient', 'test2@invalid.recipient', 'test3õ@valid.recipient']
+            }, 'õõõõ', function (err, info) {
+                expect(err).to.not.exist;
+                expect(info).to.deep.equal({
+                    accepted: ['test1@valid.recipient', 'test3õ@valid.recipient'],
+                    rejected: ['test2@invalid.recipient'],
+                    rejectedErrors: info.rejectedErrors,
+                    response: '250 OK: message queued'
+                });
+                done();
+            });
+        });
+
+        it('should receive error for 8-bit content without 8BITMIME declaration', function (done) {
+            client.send({
+                use8BitMime: false,
+                from: 'test@valid.sender',
+                to: ['test1@valid.recipient', 'test2@invalid.recipient', 'test3õ@valid.recipient']
+            }, 'õõõõ', function (err) {
+                expect(/8 bit content not allowed/.test(err.message)).to.be.true;
                 done();
             });
         });

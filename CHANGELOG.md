@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.6.0 2016-07-06
+
+  * Added support for DSN
+  * Added new option use8BitMime to indicate that the message might include non-ascii bytes
+  * Added new info property rejectedErrors that includes errors for failed recipients
+  * Updated errors to indicate where the error happened (SMTP command, API, CONN)
+
 ## v2.5.0 2016-05-11
 
   * Bumped dependencies

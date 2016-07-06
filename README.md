@@ -138,6 +138,7 @@ Where
   * **envelope** is the envelope object to use
     * **envelope.from** is the sender address
     * **envelope.to** is the recipient address or an array of addresses
+    * **envelope.use8BitMime** if `true` then inform the server that this message might contain bytes outside 7bit ascii range
     * **envelope.dsn** is the dsn options
       * **envelope.dsn.ret** return either the full message 'FULL' or only headers 'HDRS'
       * **envelope.dsn.envid** sender's 'envelope identifier' for tracking
@@ -150,8 +151,9 @@ Where
       * **response** is the last response received from the server (if the error is caused by an error response from the server)
       * **responseCode** is the numeric response code of the `response` string (if available)
     * **info** information object about accepted and rejected recipients
-      * **accepted** and array of accepted recipient addresses
-      * **rejected** and array of rejected recipient addresses
+      * **accepted** an array of accepted recipient addresses
+      * **rejected** an array of rejected recipient addresses
+      * **rejectedErrors** if some recipients were rejected then this property holds an array of error objects for the rejected recipients
       * **response** is the last response received from the server
 
 ### quit
