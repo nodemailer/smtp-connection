@@ -138,6 +138,11 @@ Where
   * **envelope** is the envelope object to use
     * **envelope.from** is the sender address
     * **envelope.to** is the recipient address or an array of addresses
+    * **envelope.dsn** is the dsn options
+      * **envelope.dsn.ret** return either the full message 'FULL' or only headers 'HDRS'
+      * **envelope.dsn.envid** sender's 'envelope identifier' for tracking
+      * **envelope.dsn.notify** when to send a DSN. Multiple options are OK - array or comma delimited. NEVER must appear by itself. Available options: 'NEVER', 'SUCCESS', 'FAILURE', 'DELAY'
+      * **envelope.dsn.orcpt** original recipient
   * **message** is either a String, Buffer or a Stream. All newlines are converted to \r\n and all dots are escaped automatically, no need to convert anything before.
   * **callback** is the callback to run once the sending is finished or failed. Callback has the following arguments
     * **err** and error object if sending failed
