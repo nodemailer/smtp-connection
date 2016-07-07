@@ -21,6 +21,7 @@ chai.config.includeStack = true;
 
 var PORT_NUMBER = 8397;
 var PROXY_PORT_NUMBER = 9999;
+var LMTP_PORT_NUMBER = 8396;
 var XOAUTH_PORT = 8497;
 
 describe('Version test', function () {
@@ -346,7 +347,7 @@ describe('Connection tests', function () {
 describe('Login tests', function () {
     this.timeout(10 * 1000);
 
-    var server, client, testtoken = 'testtoken';
+    var server, lmtpServer, client, lmtpClient, testtoken = 'testtoken';
 
     beforeEach(function (done) {
         server = new SMTPServer({
@@ -419,20 +420,66 @@ describe('Login tests', function () {
             logger: false
         });
 
+        lmtpServer = new SMTPServer({
+            lmtp: true,
+            disabledCommands: ['STARTTLS', 'AUTH'],
+
+            onData: function (stream, session, callback) {
+                stream.on('data', function () {});
+                stream.on('end', function () {
+                    var response = session.envelope.rcptTo.map(function (rcpt, i) {
+                        if (i % 2) {
+                            return '<' + rcpt.address + '> Accepted';
+                        } else {
+                            return new Error('<' + rcpt.address + '> Not accepted');
+                        }
+                    });
+                    callback(null, response);
+                });
+            },
+            onMailFrom: function (address, session, callback) {
+                if (!/@valid.sender/.test(address.address)) {
+                    return callback(new Error('Only user@valid.sender is allowed to send mail'));
+                }
+                return callback(); // Accept the address
+            },
+            onRcptTo: function (address, session, callback) {
+                if (!/@valid.recipient/.test(address.address)) {
+                    return callback(new Error('Only user@valid.recipient is allowed to receive mail'));
+                }
+                return callback(); // Accept the address
+            },
+            logger: false
+        });
+
         client = new SMTPConnection({
             port: PORT_NUMBER,
             logger: false,
             debug: false
         });
 
+        lmtpClient = new SMTPConnection({
+            port: LMTP_PORT_NUMBER,
+            lmtp: true,
+            logger: false,
+            debug: false
+        });
+
         server.listen(PORT_NUMBER, function () {
-            client.connect(done);
+            lmtpServer.listen(LMTP_PORT_NUMBER, function () {
+                client.connect(function () {
+                    lmtpClient.connect(done);
+                });
+            });
         });
     });
 
     afterEach(function (done) {
         client.close();
-        server.close(done);
+        lmtpClient.close();
+        server.close(function () {
+            lmtpServer.close(done);
+        });
     });
 
     it('should login', function (done) {
@@ -652,6 +699,27 @@ describe('Login tests', function () {
                     response: '250 OK: message queued'
                 });
                 expect(info.rejectedErrors.length).to.equal(1);
+                done();
+            });
+        });
+
+        it('lmtp should send only to valid recipients', function (done) {
+            lmtpClient.send({
+                from: 'test@valid.sender',
+                to: ['test1@valid.recipient', 'test2@invalid.recipient', 'test3@valid.recipient', 'test4@valid.recipient', 'test5@valid.recipient', 'test6@valid.recipient']
+            }, 'test', function (err, info) {
+                expect(err).to.not.exist;
+                expect(info.accepted).to.deep.equal([
+                    'test3@valid.recipient',
+                    'test5@valid.recipient'
+                ]);
+                expect(info.rejected).to.deep.equal([
+                    'test2@invalid.recipient',
+                    'test1@valid.recipient',
+                    'test4@valid.recipient',
+                    'test6@valid.recipient'
+                ]);
+                expect(info.rejectedErrors.length).to.equal(info.rejected.length);
                 done();
             });
         });

@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.8.0 2016-07-07
+
+  * Added full LMTP support. Set `lmtp` option to `true` to switch into LMTP mode
+  * Updated default timeout values
+
 ## v2.7.0 2016-07-06
 
   * Use PIPELINING for multiple RCPT TO if available

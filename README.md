@@ -31,6 +31,7 @@ Where
     * **options.secure** defines if the connection should use SSL (if `true`) or not (if `false`)
     * **options.ignoreTLS** turns off STARTTLS support if true
     * **options.requireTLS** forces the client to use STARTTLS. Returns an error if upgrading the connection is not possible or fails.
+    * **options.lmtp** if true, uses LMTP instead of SMTP to talk to the server
     * **options.name** optional hostname of the client, used for identifying to the server
     * **options.localAddress** is the local interface to bind to for network connections
     * **options.connectionTimeout** how many milliseconds to wait for the connection to establish
@@ -38,7 +39,6 @@ Where
     * **options.socketTimeout** how many milliseconds of inactivity to allow
     * **options.logger** optional [bunyan](https://github.com/trentm/node-bunyan) compatible logger instance. If set to `true` then logs to console. If value is not set or is `false` then nothing is logged
     * **options.debug** if set to true, then logs SMTP traffic, otherwise logs only transaction events
-    * **options.lmtp** if true, uses LMTP instead of SMTP to talk to the server. Partial support, does not work well with multiple recipients
     * **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
     * **options.tls** defines additional options to be passed to the socket constructor, e.g. *{rejectUnauthorized: true}*
     * **options.socket** - initialized socket to use instead of creating a new one
@@ -151,8 +151,8 @@ Where
       * **response** is the last response received from the server (if the error is caused by an error response from the server)
       * **responseCode** is the numeric response code of the `response` string (if available)
     * **info** information object about accepted and rejected recipients
-      * **accepted** an array of accepted recipient addresses
-      * **rejected** an array of rejected recipient addresses
+      * **accepted** an array of accepted recipient addresses. Normally this array should contain at least one address except when in LMTP mode. In this case the message itself might have succeeded but all recipients were rejected after sending the message.
+      * **rejected** an array of rejected recipient addresses. This array includes both the addresses that were rejected before sending the message and addresses rejected after sending it if using LMTP
       * **rejectedErrors** if some recipients were rejected then this property holds an array of error objects for the rejected recipients
       * **response** is the last response received from the server
 
