@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.9.0 2016-07-13
+
+  * Added `reset(cb)` method to call `RSET` command
+  * Include failed recipients in the response error object
+
 ## v2.8.0 2016-07-07
 
   * Added full LMTP support. Set `lmtp` option to `true` to switch into LMTP mode

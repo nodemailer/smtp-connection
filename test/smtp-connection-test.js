@@ -686,6 +686,36 @@ describe('Login tests', function () {
             });
         });
 
+        it('should send multiple messages', function (done) {
+            client.send({
+                from: 'test@valid.sender',
+                to: 'test@valid.recipient'
+            }, 'test', function (err, info) {
+                expect(err).to.not.exist;
+                expect(info).to.deep.equal({
+                    accepted: ['test@valid.recipient'],
+                    rejected: [],
+                    response: '250 OK: message queued'
+                });
+                client.reset(function (err) {
+                    expect(err).to.not.exist;
+
+                    client.send({
+                        from: 'test2@valid.sender',
+                        to: 'test2@valid.recipient'
+                    }, 'test2', function (err, info) {
+                        expect(err).to.not.exist;
+                        expect(info).to.deep.equal({
+                            accepted: ['test2@valid.recipient'],
+                            rejected: [],
+                            response: '250 OK: message queued'
+                        });
+                        done();
+                    });
+                });
+            });
+        });
+
         it('should send only to valid recipients', function (done) {
             client.send({
                 from: 'test@valid.sender',
@@ -699,6 +729,19 @@ describe('Login tests', function () {
                     response: '250 OK: message queued'
                 });
                 expect(info.rejectedErrors.length).to.equal(1);
+                done();
+            });
+        });
+
+        it('should reject all recipients', function (done) {
+            client.send({
+                from: 'test@valid.sender',
+                to: ['test1@invalid.recipient', 'test2@invalid.recipient', 'test3@invalid.recipient']
+            }, 'test', function (err, info) {
+                expect(err).to.exist;
+                expect(info).to.not.exist;
+                expect(err.rejected).to.deep.equal(['test1@invalid.recipient', 'test2@invalid.recipient', 'test3@invalid.recipient']);
+                expect(err.rejectedErrors.length).to.equal(3);
                 done();
             });
         });

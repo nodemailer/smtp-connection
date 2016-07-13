@@ -31,7 +31,7 @@ Where
     * **options.secure** defines if the connection should use SSL (if `true`) or not (if `false`)
     * **options.ignoreTLS** turns off STARTTLS support if true
     * **options.requireTLS** forces the client to use STARTTLS. Returns an error if upgrading the connection is not possible or fails.
-    * **options.lmtp** if true, uses LMTP instead of SMTP to talk to the server
+
     * **options.name** optional hostname of the client, used for identifying to the server
     * **options.localAddress** is the local interface to bind to for network connections
     * **options.connectionTimeout** how many milliseconds to wait for the connection to establish
@@ -170,6 +170,14 @@ Use it for less graceful disconnect
 
 ```javascript
 connection.close();
+```
+
+### reset
+
+Use it to reset current session (invokes RSET command)
+
+```javascript
+connection.reset(callback);
 ```
 
 ## License
