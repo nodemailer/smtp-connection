@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.10.0 2016-07-22
+
+  * Added new option `opportunisticTLS` to allow continuing if STARTTLS failed
+
 ## v2.9.0 2016-07-13
 
   * Added `reset(cb)` method to call `RSET` command
