@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.11.0 2016-08-04
+
+  * Added new envelope option `size` to skip sending messages that are too large
+
 ## v2.10.0 2016-07-22
 
   * Added new option `opportunisticTLS` to allow continuing if STARTTLS failed

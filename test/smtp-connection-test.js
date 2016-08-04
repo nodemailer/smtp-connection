@@ -374,6 +374,8 @@ describe('Login tests', function () {
             authMethods: ['PLAIN', 'XOAUTH2'],
             disabledCommands: ['STARTTLS'],
 
+            size: 100 * 1024,
+
             onData: function (stream, session, callback) {
                 var err = false;
                 stream.on('data', function (chunk) {
@@ -410,6 +412,10 @@ describe('Login tests', function () {
                 });
             },
             onMailFrom: function (address, session, callback) {
+                if (address.args && parseInt(address.args.SIZE, 10) > 50 * 1024) {
+                    return callback(new Error('452 Insufficient channel storage: ' + address.address));
+                }
+
                 if (!/@valid.sender/.test(address.address)) {
                     return callback(new Error('Only user@valid.sender is allowed to send mail'));
                 }
@@ -762,6 +768,46 @@ describe('Login tests', function () {
                 expect(info).to.not.exist;
                 expect(err.rejected).to.deep.equal(['test1@invalid.recipient', 'test2@invalid.recipient', 'test3@invalid.recipient']);
                 expect(err.rejectedErrors.length).to.equal(3);
+                done();
+            });
+        });
+
+        it('should reject too large SIZE arguments', function (done) {
+            client.send({
+                from: 'test2@valid.sender',
+                to: 'test2@valid.recipient',
+                size: 1024 * 1024
+            }, 'test', function (err, info) {
+                expect(err).to.exist;
+                expect(info).to.not.exist;
+                done();
+            });
+        });
+
+        it('should reject too large message', function (done) {
+            client.send({
+                from: 'test2@valid.sender',
+                to: 'test2@valid.recipient',
+                size: 70 * 1024
+            }, 'test', function (err, info) {
+                expect(err).to.exist;
+                expect(info).to.not.exist;
+                done();
+            });
+        });
+
+        it('should declare SIZE', function (done) {
+            client.send({
+                from: 'test2@valid.sender',
+                to: 'test2@valid.recipient',
+                size: 10 * 1024
+            }, 'test', function (err, info) {
+                expect(err).to.not.exist;
+                expect(info).to.deep.equal({
+                    accepted: ['test2@valid.recipient'],
+                    rejected: [],
+                    response: '250 OK: message queued'
+                });
                 done();
             });
         });

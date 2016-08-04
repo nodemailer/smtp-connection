@@ -145,6 +145,7 @@ Where
 
   - **envelope.from** is the sender address
   - **envelope.to** is the recipient address or an array of addresses
+  - **envelope.size** is an optional value of the predicted size of the message in bytes. This value is used if the server supports the SIZE extension (RFC1870)
   - **envelope.use8BitMime** if `true` then inform the server that this message might contain bytes outside 7bit ascii range
   - **envelope.dsn** is the dsn options
 
