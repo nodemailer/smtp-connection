@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.12.0 2016-09-05
+
+  * Updated dependencies
+
 ## v2.11.0 2016-08-04
 
   * Added new envelope option `size` to skip sending messages that are too large
