@@ -10,7 +10,7 @@ This module is the successor for the client part of the (now deprecated) SMTP mo
 
   * **[nodemailer](https://github.com/nodemailer/nodemailer)** – all in one package to send email from Node.js
   * **[smtp-server](https://github.com/andris9/smtp-server)** – add SMTP server interface to your application
-  * **[szone-mta](https://github.com/zone-eu/zone-mta)** – full featured outbound MTA built using smtp-connection and smtp-server modules
+  * **[zone-mta](https://github.com/zone-eu/zone-mta)** – full featured outbound MTA built using smtp-connection and smtp-server modules
 
 ## Usage
 
