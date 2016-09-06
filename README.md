@@ -6,6 +6,12 @@ This module is the successor for the client part of the (now deprecated) SMTP mo
 
 [![Build Status](https://secure.travis-ci.org/nodemailer/smtp-connection.svg)](http://travis-ci.org/nodemailer/smtp-connection) [![npm version](https://badge.fury.io/js/smtp-connection.svg)](http://badge.fury.io/js/smtp-connection)
 
+## Other similar packages you might be interested in
+
+  * **[nodemailer](https://github.com/nodemailer/nodemailer)** – all in one package to send email from Node.js
+  * **[smtp-server](https://github.com/andris9/smtp-server)** – add SMTP server interface to your application
+  * **[szone-mta](https://github.com/zone-eu/zone-mta)** – full featured outbound MTA built using smtp-connection and smtp-server modules
+
 ## Usage
 
 Install with npm
