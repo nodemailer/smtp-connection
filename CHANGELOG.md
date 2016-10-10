@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.12.1 2016-10-10
+
+  * Fixed invalid SIZE detection
+
 ## v2.12.0 2016-09-05
 
   * Updated dependencies
