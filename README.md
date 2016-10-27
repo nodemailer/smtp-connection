@@ -49,6 +49,7 @@ Where
   - **options.socketTimeout** how many milliseconds of inactivity to allow
   - **options.logger** optional [bunyan](https://github.com/trentm/node-bunyan) compatible logger instance. If set to `true` then logs to console. If value is not set or is `false` then nothing is logged
   - **options.debug** if set to true, then logs SMTP traffic, otherwise logs only transaction events
+  - **options.transactionLog** if set to true, then logs SMTP traffic without message content
   - **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
   - **options.tls** defines additional options to be passed to the socket constructor, e.g. _{rejectUnauthorized: true}_
   - **options.socket** - initialized socket to use instead of creating a new one
