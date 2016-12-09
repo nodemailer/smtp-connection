@@ -1,4 +1,4 @@
-/* eslint no-unused-expressions:0, no-invalid-this:0 */
+/* eslint no-unused-expressions:0, no-invalid-this:0, no-var: 0, prefer-arrow-callback: 0, object-shorthand: 0 */
 /* globals afterEach, beforeEach, describe, it */
 
 'use strict';
@@ -142,10 +142,12 @@ describe('Connection tests', function () {
     });
 
     it('should connect to a server and upgrade with forced STARTTLS', function (done) {
+
         var client = new SMTPConnection({
             port: PORT_NUMBER,
-            logger: false,
-            requireTLS: true
+            requireTLS: true,
+            transactionLog: true,
+            logger: false
         });
 
         client.connect(function () {

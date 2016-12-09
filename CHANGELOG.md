@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.0 2016-12-09
+
+  * Use ES6 syntax
+  * Updated logging to support structured output for real Bunyan logger instances
+
 ## v2.12.1 2016-10-10
 
   * Fixed invalid SIZE detection

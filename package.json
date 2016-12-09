@@ -1,6 +1,6 @@
 {
   "name": "smtp-connection",
-  "version": "2.12.2",
+  "version": "3.0.0",
   "description": "Connect to SMTP servers",
   "main": "lib/smtp-connection.js",
   "directories": {
@@ -23,19 +23,23 @@
   },
   "homepage": "https://github.com/andris9/smtp-connection",
   "devDependencies": {
+    "bunyan": "^1.8.5",
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
     "grunt-eslint": "^19.0.0",
     "grunt-mocha-test": "^0.13.2",
-    "mocha": "^3.1.1",
+    "mocha": "^3.2.0",
     "proxy-test-server": "^1.0.0",
     "sinon": "^1.17.6",
-    "smtp-server": "^1.15.0",
+    "smtp-server": "^1.16.1",
     "xoauth2": "^1.2.0"
   },
   "dependencies": {
-    "httpntlm": "1.6.1",
-    "nodemailer-shared": "1.1.0"
+    "httpntlm": "1.7.3",
+    "nodemailer-shared": "2.0.0"
+  },
+  "engines": {
+    "node": ">=6.0.0"
   }
 }

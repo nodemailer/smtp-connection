@@ -8,9 +8,9 @@ This module is the successor for the client part of the (now deprecated) SMTP mo
 
 ## Other similar packages you might be interested in
 
-  * **[nodemailer](https://github.com/nodemailer/nodemailer)** – all in one package to send email from Node.js
-  * **[smtp-server](https://github.com/andris9/smtp-server)** – add SMTP server interface to your application
-  * **[zone-mta](https://github.com/zone-eu/zone-mta)** – full featured outbound MTA built using smtp-connection and smtp-server modules
+- **[nodemailer](https://github.com/nodemailer/nodemailer)** – all in one package to send email from Node.js
+- **[smtp-server](https://github.com/andris9/smtp-server)** – add SMTP server interface to your application
+- **[zone-mta](https://github.com/zone-eu/zone-mta)** – full featured outbound MTA built using smtp-connection and smtp-server modules
 
 ## Usage
 
@@ -22,14 +22,14 @@ npm install smtp-connection
 
 Require in your script
 
-```
-var SMTPConnection = require('smtp-connection');
+```javascript
+const SMTPConnection = require('smtp-connection');
 ```
 
 ### Create SMTPConnection instance
 
 ```javascript
-var connection = new SMTPConnection(options);
+let connection = new SMTPConnection(options);
 ```
 
 Where
@@ -48,8 +48,8 @@ Where
   - **options.greetingTimeout** how many milliseconds to wait for the greeting after connection is established
   - **options.socketTimeout** how many milliseconds of inactivity to allow
   - **options.logger** optional [bunyan](https://github.com/trentm/node-bunyan) compatible logger instance. If set to `true` then logs to console. If value is not set or is `false` then nothing is logged
-  - **options.debug** if set to true, then logs SMTP traffic, otherwise logs only transaction events
   - **options.transactionLog** if set to true, then logs SMTP traffic without message content
+  - **options.debug** if set to true, then logs SMTP traffic and message content, otherwise logs only transaction events
   - **options.authMethod** defines preferred authentication method, e.g. 'PLAIN'
   - **options.tls** defines additional options to be passed to the socket constructor, e.g. _{rejectUnauthorized: true}_
   - **options.socket** - initialized socket to use instead of creating a new one
@@ -104,7 +104,7 @@ If a [XOAuth2](https://github.com/andris9/xoauth2) token generator is used as th
 **XOAuth2 Example**
 
 ```javascript
-var generator = require('xoauth2').createXOAuth2Generator({
+let generator = require('xoauth2').createXOAuth2Generator({
     user: '{username}',
     clientId: '{Client ID}',
     clientSecret: '{Client Secret}',
