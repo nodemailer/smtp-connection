@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.1 2016-12-09
+
+  * Fixed non-structured logging
+
 ## v3.0.0 2016-12-09
 
   * Use ES6 syntax
