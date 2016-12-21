@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.0 2016-12-21
+
+  * use setKeepAlive(true) on newly created sockets
+
 ## v3.0.1 2016-12-09
 
   * Fixed non-structured logging

@@ -1,6 +1,6 @@
 {
   "name": "smtp-connection",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Connect to SMTP servers",
   "main": "lib/smtp-connection.js",
   "directories": {
@@ -32,7 +32,7 @@
     "mocha": "^3.2.0",
     "proxy-test-server": "^1.0.0",
     "sinon": "^1.17.6",
-    "smtp-server": "^1.16.1",
+    "smtp-server": "^1.17.0",
     "xoauth2": "^1.2.0"
   },
   "dependencies": {
