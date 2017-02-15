@@ -154,4 +154,6 @@ connection.reset(callback);
 
 ## License
 
-**MIT**
+European Union Public License 1.1\. Commercial licenses available upon request. Contact [sales@nodemailer.com](mailto:sales@nodemailer.com) for details.
+
+© 2017 Kreata OÜ
