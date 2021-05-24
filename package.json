@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "grunt mochaTest"
+    "test": "grunt mochaTest:all"
   },
   "repository": {
     "type": "git",
@@ -30,10 +30,10 @@
     "grunt-cli": "^1.2.0",
     "grunt-eslint": "^19.0.0",
     "grunt-mocha-test": "^0.13.2",
-    "mocha": "^3.2.0"
+    "mocha": "^8.4.0"
   },
   "dependencies": {
-    "nodemailer": "^3.1.1"
+    "nodemailer": "^6.6.1"
   },
   "engines": {
     "node": ">=6.0.0"
