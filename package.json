@@ -28,12 +28,12 @@
     "eslint-config-nodemailer": "^1.0.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
-    "grunt-eslint": "^19.0.0",
+    "grunt-eslint": "^24.0.0",
     "grunt-mocha-test": "^0.13.2",
-    "mocha": "^3.2.0"
+    "mocha": "^10.0.0"
   },
   "dependencies": {
-    "nodemailer": "^3.1.1"
+    "nodemailer": "^6.0.0"
   },
   "engines": {
     "node": ">=6.0.0"
